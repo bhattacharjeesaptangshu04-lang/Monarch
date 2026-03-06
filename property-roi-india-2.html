@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property ROI Calculator — India</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #1e1e1e;
+    --border2: #2a2a2a;
+    --gold: #e8d5a3;
+    --gold-mid: #a89878;
+    --gold-dark: #7a6035;
+    --text: #cccccc;
+    --muted: #444;
+    --green: #7a9a6a;
+    --red: #c0533a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.013) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.013) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow-tr {
+    position: fixed; top: 0; right: 0;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle at top right, rgba(122,96,53,0.18), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .glow-bl {
+    position: fixed; bottom: 0; left: 0;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle at bottom left, rgba(122,96,53,0.08), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0 28px;
+    margin-bottom: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    animation: fadeUp 0.4s both;
+  }
+
+  .header-eyebrow {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--gold-dark);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--gold-dark); }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .header h1 em { color: var(--gold-mid); font-weight: 400; }
+
+  .header-roi { text-align: right; }
+  .header-roi .big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    transition: color 0.3s;
+  }
+  .header-roi .lbl {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* METRIC CARDS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 2px;
+    background: #111;
+    margin-bottom: 40px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    padding: 22px 18px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s both;
+  }
+  .metric-card.highlight {
+    background: linear-gradient(135deg, #1e1a10, #2a2310);
+    border: 1px solid var(--gold-dark);
+  }
+  .metric-card.highlight::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+  }
+
+  .metric-card .m-label {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .metric-card.highlight .m-label { color: var(--gold-mid); }
+
+  .metric-card .m-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: #ccc;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    transition: all 0.2s;
+  }
+  .metric-card.highlight .m-value { color: var(--gold); }
+
+  .metric-card .m-sub {
+    font-size: 0.58rem;
+    color: #333;
+    margin-top: 6px;
+    letter-spacing: 0.06em;
+  }
+  .metric-card.highlight .m-sub { color: var(--gold-dark); }
+
+  /* TABS */
+  .tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #3a3a3a;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold-dark); }
+  .tab-btn:hover { color: var(--gold-mid); }
+
+  /* PANELS */
+  .tab-panel { display: none; animation: fadeUp 0.35s both; }
+  .tab-panel.active { display: block; }
+
+  /* INPUTS GRID */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+
+  @media (max-width: 700px) {
+    .inputs-grid { grid-template-columns: 1fr; gap: 32px; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* SECTION LABEL */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    margin-top: 8px;
+  }
+  .section-label::before { content: ''; width: 24px; height: 1px; background: var(--gold-dark); flex-shrink: 0; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-label span {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--gold-dark);
+    white-space: nowrap;
+  }
+
+  /* SLIDER */
+  .slider-row { margin-bottom: 26px; }
+  .slider-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .slider-top label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--gold-mid);
+    letter-spacing: 0.04em;
+  }
+  .slider-top .val {
+    font-size: 1rem;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .slider-track {
+    position: relative;
+    height: 3px;
+    background: #2a2a2a;
+    border-radius: 2px;
+  }
+  .slider-fill {
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    border-radius: 2px;
+    pointer-events: none;
+    transition: width 0.05s;
+  }
+  .slider-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg);
+    pointer-events: none;
+    box-shadow: 0 0 12px rgba(232,213,163,0.4);
+    transition: left 0.05s;
+  }
+  .slider-input {
+    position: absolute;
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+    width: 100%; height: 20px;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+  }
+  .slider-hint {
+    font-size: 0.58rem;
+    color: #3a3a3a;
+    margin-top: 6px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* INFO BOX */
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .info-row .val { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--gold); }
+
+  /* PROJECTION */
+  .proj-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 2px;
+    background: #111;
+    margin-bottom: 32px;
+  }
+
+  .bar-row { margin-bottom: 20px; }
+  .bar-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .bar-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .bar-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
+  .bar-track { height: 3px; background: var(--border); border-radius: 2px; }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+  .agent-note {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--gold-dark);
+    padding: 16px 20px;
+    margin-top: 24px;
+  }
+  .agent-note .note-label {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--gold-dark);
+    margin-bottom: 8px;
+  }
+  .agent-note p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--gold-mid);
+    line-height: 1.65;
+  }
+
+  /* TABLE */
+  .amort-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+  thead tr { border-bottom: 1px solid var(--border2); }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid #161616; transition: background 0.15s; }
+  tr:nth-child(even) td { background: #121212; }
+  tr.exit-row td { background: rgba(122,96,53,0.08) !important; }
+  tr.exit-row td:first-child { color: var(--gold); }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #161616;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer .disc { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: #222; }
+  .footer .brand { font-family: 'Cormorant Garamond', serif; font-size: 0.85rem; color: #2a2a2a; font-style: italic; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 0; height: 0; }
+  input[type=range]::-moz-range-thumb { width: 0; height: 0; border: none; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; }
+</style>
+</head>
+<body>
+<div class="glow-tr"></div>
+<div class="glow-bl"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Real Estate Intelligence · India</div>
+      <h1>Property ROI<br><em>Calculator</em></h1>
+    </div>
+    <div class="header-roi">
+      <div class="big" id="hdr-roi">—</div>
+      <div class="lbl">Annualised ROI</div>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics" id="metrics-row">
+    <div class="metric-card highlight" style="animation-delay:0.05s">
+      <div class="m-label">Monthly Cash Flow</div>
+      <div class="m-value" id="m-cashflow">—</div>
+      <div class="m-sub" id="m-cashflow-sub">—</div>
+    </div>
+    <div class="metric-card" style="animation-delay:0.1s">
+      <div class="m-label">Cap Rate</div>
+      <div class="m-value" id="m-caprate">—</div>
+      <div class="m-sub">Net Op. Income / Price</div>
+    </div>
+    <div class="metric-card" style="animation-delay:0.15s">
+      <div class="m-label">Cash-on-Cash</div>
+      <div class="m-value" id="m-coc">—</div>
+      <div class="m-sub">Annual CF / Down Payment</div>
+    </div>
+    <div class="metric-card" style="animation-delay:0.2s">
+      <div class="m-label">Gross Rent Mult.</div>
+      <div class="m-value" id="m-grm">—</div>
+      <div class="m-sub">Price / Annual Rent</div>
+    </div>
+    <div class="metric-card highlight" style="animation-delay:0.25s">
+      <div class="m-label" id="m-return-label">Total Return</div>
+      <div class="m-value" id="m-return">—</div>
+      <div class="m-sub" id="m-return-sub">—</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="inputs">Inputs</button>
+    <button class="tab-btn" data-tab="projection" id="proj-tab-btn">Projection</button>
+    <button class="tab-btn" data-tab="amortization">Amortisation</button>
+  </div>
+
+  <!-- INPUTS TAB -->
+  <div class="tab-panel active" id="tab-inputs">
+    <div class="inputs-grid">
+      <div>
+        <div class="section-label"><span>Acquisition</span></div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Purchase Price</label>
+            <span class="val" id="val-purchase">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-purchase"></div>
+            <div class="slider-thumb" id="thumb-purchase"></div>
+            <input class="slider-input" type="range" id="purchase" min="1000000" max="100000000" step="500000" value="7500000">
+          </div>
+          <div class="slider-hint" id="hint-purchase">Total property cost</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Down Payment</label>
+            <span class="val" id="val-down">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-down"></div>
+            <div class="slider-thumb" id="thumb-down"></div>
+            <input class="slider-input" type="range" id="down" min="10" max="80" step="1" value="20">
+          </div>
+          <div class="slider-hint" id="hint-down">= ₹X cash required</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Home Loan Rate</label>
+            <span class="val" id="val-rate">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-rate"></div>
+            <div class="slider-thumb" id="thumb-rate"></div>
+            <input class="slider-input" type="range" id="rate" min="6" max="14" step="0.05" value="8.5">
+          </div>
+          <div class="slider-hint">SBI avg: 8.4–9.15% (2025)</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Loan Tenure</label>
+            <span class="val" id="val-tenure">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-tenure"></div>
+            <div class="slider-thumb" id="thumb-tenure"></div>
+            <input class="slider-input" type="range" id="tenure" min="5" max="30" step="5" value="20">
+          </div>
+          <div class="slider-hint">Max 30 years for home loans</div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-row">
+            <span class="lbl">Loan Amount</span>
+            <span class="val" id="info-loan">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Monthly EMI</span>
+            <span class="val" id="info-emi">—</span>
+          </div>
+          <div class="info-row">
+            <span class="lbl">Total Interest Paid</span>
+            <span class="val" id="info-interest">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label"><span>Rental Income & Expenses</span></div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Monthly Rent</label>
+            <span class="val" id="val-rent">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-rent"></div>
+            <div class="slider-thumb" id="thumb-rent"></div>
+            <input class="slider-input" type="range" id="rent" min="5000" max="300000" step="1000" value="35000">
+          </div>
+          <div class="slider-hint" id="hint-rent">Gross annual rental income</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Vacancy Rate</label>
+            <span class="val" id="val-vacancy">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-vacancy"></div>
+            <div class="slider-thumb" id="thumb-vacancy"></div>
+            <input class="slider-input" type="range" id="vacancy" min="0" max="25" step="1" value="5">
+          </div>
+          <div class="slider-hint">Expected % of time vacant</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Operating Expenses</label>
+            <span class="val" id="val-expenses">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-expenses"></div>
+            <div class="slider-thumb" id="thumb-expenses"></div>
+            <input class="slider-input" type="range" id="expenses" min="10" max="50" step="1" value="25">
+          </div>
+          <div class="slider-hint">Maintenance, tax, society charges</div>
+        </div>
+
+        <div class="section-label" style="margin-top:20px"><span>Growth Projections</span></div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Annual Appreciation</label>
+            <span class="val" id="val-appreciation">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-appreciation"></div>
+            <div class="slider-thumb" id="thumb-appreciation"></div>
+            <input class="slider-input" type="range" id="appreciation" min="0" max="15" step="0.5" value="6">
+          </div>
+          <div class="slider-hint">Indian metro avg: 5–8%/yr</div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-top">
+            <label>Hold Period</label>
+            <span class="val" id="val-hold">—</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-hold"></div>
+            <div class="slider-thumb" id="thumb-hold"></div>
+            <input class="slider-input" type="range" id="hold" min="1" max="30" step="1" value="10">
+          </div>
+          <div class="slider-hint">Investment horizon (years)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTION TAB -->
+  <div class="tab-panel" id="tab-projection">
+    <div class="proj-grid" id="proj-grid">
+      <!-- filled by JS -->
+    </div>
+    <div class="section-label"><span>Return Breakdown</span></div>
+    <div class="info-box">
+      <div class="bar-row">
+        <div class="bar-top">
+          <span class="bar-label">Appreciation Gain</span>
+          <span class="bar-val" id="bar-appr-val" style="color:var(--gold)">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="bar-appr" style="background:var(--gold)"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-top">
+          <span class="bar-label">Equity Paydown</span>
+          <span class="bar-val" id="bar-equity-val" style="color:var(--gold-mid)">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="bar-equity" style="background:var(--gold-mid)"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-top">
+          <span class="bar-label">Net Cash Flow</span>
+          <span class="bar-val" id="bar-cf-val">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="bar-cf"></div></div>
+      </div>
+    </div>
+    <div class="agent-note">
+      <div class="note-label">Agent Insight</div>
+      <p id="agent-note-text">—</p>
+    </div>
+  </div>
+
+  <!-- AMORTIZATION TAB -->
+  <div class="tab-panel" id="tab-amortization">
+    <div class="amort-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Principal (₹)</th>
+            <th>Interest (₹)</th>
+            <th>Balance (₹)</th>
+            <th>Cumul. Equity (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="amort-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="disc">For illustrative purposes only · Consult a SEBI-registered advisor · All amounts in INR</div>
+    <div class="brand">Property Intelligence Suite · India</div>
+  </div>
+
+</div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function fmtINR(n) {
+  // Indian numbering: lakhs and crores
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1e7) return sign + '₹' + (abs / 1e7).toFixed(2) + ' Cr';
+  if (abs >= 1e5) return sign + '₹' + (abs / 1e5).toFixed(2) + ' L';
+  return sign + '₹' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(abs);
+}
+function fmtINRFull(n) {
+  return (n < 0 ? '-₹' : '₹') + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.abs(n));
+}
+function fmtPct(n) { return n.toFixed(2) + '%'; }
+
+// ── SLIDER SETUP ─────────────────────────────────────────────────────────────
+function initSlider(id, onChange) {
+  const input = document.getElementById(id);
+  const fill  = document.getElementById('fill-' + id);
+  const thumb = document.getElementById('thumb-' + id);
+  function update() {
+    const pct = (input.value - input.min) / (input.max - input.min) * 100;
+    fill.style.width  = pct + '%';
+    thumb.style.left  = pct + '%';
+    onChange(parseFloat(input.value));
+  }
+  input.addEventListener('input', update);
+  update();
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = {
+  purchase: 7500000, down: 20, rate: 8.5, tenure: 20,
+  rent: 35000, vacancy: 5, expenses: 25, appreciation: 6, hold: 10
+};
+
+// ── CALCULATE ────────────────────────────────────────────────────────────────
+function calc() {
+  const { purchase, down: downPct, rate, tenure, rent, vacancy, expenses, appreciation, hold } = S;
+  const downAmt = purchase * downPct / 100;
+  const loan    = purchase - downAmt;
+  const mo      = rate / 100 / 12;
+  const n       = tenure * 12;
+  const emi     = mo === 0 ? loan / n : loan * mo * Math.pow(1+mo,n) / (Math.pow(1+mo,n)-1);
+  const totalPaid = emi * n;
+  const totalInt  = totalPaid - loan;
+
+  const effRent   = rent * (1 - vacancy/100) * 12;
+  const opEx      = effRent * expenses / 100;
+  const noi       = effRent - opEx;
+  const annualCF  = noi - emi * 12;
+  const monthlyCF = annualCF / 12;
+
+  const capRate   = noi / purchase * 100;
+  const coc       = annualCF / downAmt * 100;
+  const grm       = purchase / (rent * 12);
+
+  // Balance after hold period
+  let bal = loan;
+  const schedule = [];
+  for (let yr = 1; yr <= Math.min(hold, tenure); yr++) {
+    let yInt = 0, yPri = 0;
+    for (let m = 0; m < 12; m++) {
+      const interest = bal * mo;
+      const principal = emi - interest;
+      yInt += interest; yPri += principal;
+      bal = Math.max(0, bal - principal);
+    }
+    schedule.push({ yr, principal: yPri, interest: yInt, balance: bal });
+  }
+
+  const equityPaydown = loan - bal;
+  const salePrice     = purchase * Math.pow(1 + appreciation/100, hold);
+  const totalCF       = annualCF * hold;
+  const totalReturn   = (salePrice - purchase) + equityPaydown + totalCF;
+  const totalROI      = totalReturn / downAmt * 100;
+  const annualROI     = (Math.pow(1 + totalROI/100, 1/hold) - 1) * 100;
+
+  return { downAmt, loan, emi, totalInt, effRent, noi, annualCF, monthlyCF, capRate, coc, grm, salePrice, equityPaydown, totalCF, totalReturn, totalROI, annualROI, schedule };
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  const r = calc();
+  const { purchase, down: downPct, hold, appreciation, expenses } = S;
+
+  // Header ROI
+  const hdrEl = document.getElementById('hdr-roi');
+  hdrEl.textContent = fmtPct(r.annualROI);
+  hdrEl.style.color = r.annualROI >= 0 ? '#e8d5a3' : '#c0533a';
+
+  // Metrics
+  const cfEl = document.getElementById('m-cashflow');
+  cfEl.textContent = fmtINR(r.monthlyCF);
+  cfEl.style.color = r.monthlyCF >= 0 ? '#e8d5a3' : '#c0533a';
+  document.getElementById('m-cashflow-sub').textContent = r.monthlyCF >= 0 ? 'Positive Cash Flow' : 'Negative Cash Flow';
+  document.getElementById('m-caprate').textContent = fmtPct(r.capRate);
+  document.getElementById('m-coc').textContent = fmtPct(r.coc);
+  document.getElementById('m-grm').textContent = r.grm.toFixed(1) + '×';
+  document.getElementById('m-return-label').textContent = hold + 'yr Total Return';
+  document.getElementById('m-return').textContent = fmtINR(r.totalReturn);
+  document.getElementById('m-return-sub').textContent = 'On ' + fmtINR(r.downAmt) + ' invested';
+
+  // Slider display values
+  document.getElementById('val-purchase').textContent   = fmtINR(S.purchase);
+  document.getElementById('hint-purchase').textContent  = 'Total property cost';
+  document.getElementById('val-down').textContent       = downPct + '%';
+  document.getElementById('hint-down').textContent      = '= ' + fmtINR(r.downAmt) + ' cash required';
+  document.getElementById('val-rate').textContent       = S.rate.toFixed(2) + '%';
+  document.getElementById('val-tenure').textContent     = S.tenure + ' yrs';
+  document.getElementById('val-rent').textContent       = fmtINR(S.rent);
+  document.getElementById('hint-rent').textContent      = '= ' + fmtINR(S.rent * 12) + ' gross annual';
+  document.getElementById('val-vacancy').textContent    = S.vacancy + '%';
+  document.getElementById('val-expenses').textContent   = S.expenses + '%';
+  document.getElementById('val-appreciation').textContent = S.appreciation + '%';
+  document.getElementById('val-hold').textContent       = S.hold + ' yrs';
+
+  // Info box
+  document.getElementById('info-loan').textContent     = fmtINR(r.loan);
+  document.getElementById('info-emi').textContent      = fmtINR(r.emi);
+  document.getElementById('info-interest').textContent = fmtINR(r.totalInt);
+
+  // Proj tab button label
+  document.getElementById('proj-tab-btn').textContent = hold + 'yr Projection';
+
+  // Projection grid
+  const projData = [
+    ['Projected Sale Price', fmtINR(r.salePrice), 'After ' + hold + 'yrs @ ' + appreciation + '%/yr'],
+    ['Equity Paydown',       fmtINR(r.equityPaydown), 'Principal repaid'],
+    ['Total Net Cash Flow',  fmtINR(r.totalCF), hold + 'yr cumulative CF'],
+    ['Total Profit',         fmtINR(r.totalReturn), 'Appreciation + Equity + CF'],
+    ['Total ROI',            fmtPct(r.totalROI), 'On ' + fmtINR(r.downAmt) + ' invested'],
+    ['Annualised ROI',       fmtPct(r.annualROI), 'IRR approximation', true],
+  ];
+  document.getElementById('proj-grid').innerHTML = projData.map(([l,v,s,h], i) => `
+    <div class="metric-card ${h ? 'highlight' : ''}" style="animation-delay:${i*0.05}s">
+      <div class="m-label">${l}</div>
+      <div class="m-value">${v}</div>
+      <div class="m-sub">${s}</div>
+    </div>
+  `).join('');
+
+  // Return bars
+  const total = Math.abs(r.totalReturn) || 1;
+  const apprGain = r.salePrice - S.purchase;
+  document.getElementById('bar-appr-val').textContent  = fmtINR(apprGain);
+  document.getElementById('bar-equity-val').textContent = fmtINR(r.equityPaydown);
+  const cfVal = document.getElementById('bar-cf-val');
+  cfVal.textContent = fmtINR(r.totalCF);
+  cfVal.style.color = r.totalCF >= 0 ? '#7a9a6a' : '#c0533a';
+
+  setTimeout(() => {
+    document.getElementById('bar-appr').style.width   = Math.min(100, Math.abs(apprGain) / total * 100) + '%';
+    document.getElementById('bar-equity').style.width = Math.min(100, Math.abs(r.equityPaydown) / total * 100) + '%';
+    document.getElementById('bar-cf').style.width     = Math.min(100, Math.abs(r.totalCF) / total * 100) + '%';
+    document.getElementById('bar-cf').style.background = r.totalCF >= 0 ? '#7a9a6a' : '#c0533a';
+  }, 50);
+
+  // Agent note
+  let note = '';
+  if (r.coc >= 8)
+    note = `Strong ${fmtPct(r.coc)} cash-on-cash return — well above the 6–8% benchmark for investment-grade Indian rental properties. This property is cash-flow positive and has excellent fundamentals.`;
+  else if (r.coc >= 3)
+    note = `A ${fmtPct(r.coc)} cash-on-cash return is moderate for the Indian market. Appreciation potential at ${appreciation}%/yr is the primary value driver over ${hold} years. Consider cities like Hyderabad or Pune for stronger yields.`;
+  else
+    note = `Cash flow is thin at ${fmtPct(r.coc)}. Consider increasing the down payment to reduce EMI, or target rental yields above 3.5%. Tier-2 cities often offer better rental yields than metros.`;
+  document.getElementById('agent-note-text').textContent = note;
+
+  // Amortization
+  const tbody = document.getElementById('amort-body');
+  tbody.innerHTML = r.schedule.map(row => {
+    const equity = r.loan - row.balance;
+    const isExit = row.yr === hold;
+    return `<tr class="${isExit ? 'exit-row' : ''}">
+      <td>${row.yr}${isExit ? ' ← EXIT' : ''}</td>
+      <td style="color:#8aaa7a">${fmtINRFull(row.principal)}</td>
+      <td style="color:#555">${fmtINRFull(row.interest)}</td>
+      <td style="color:#888">${fmtINRFull(row.balance)}</td>
+      <td style="color:${isExit ? '#e8d5a3' : '#a89878'}; font-family:${isExit ? "'Cormorant Garamond',serif" : 'inherit'}; font-size:${isExit ? '1rem' : '0.72rem'}">${fmtINRFull(equity)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── INIT SLIDERS ─────────────────────────────────────────────────────────────
+initSlider('purchase',     v => { S.purchase     = v; render(); });
+initSlider('down',         v => { S.down         = v; render(); });
+initSlider('rate',         v => { S.rate         = v; render(); });
+initSlider('tenure',       v => { S.tenure       = v; render(); });
+initSlider('rent',         v => { S.rent         = v; render(); });
+initSlider('vacancy',      v => { S.vacancy      = v; render(); });
+initSlider('expenses',     v => { S.expenses     = v; render(); });
+initSlider('appreciation', v => { S.appreciation = v; render(); });
+initSlider('hold',         v => { S.hold         = v; render(); });
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── FIRST RENDER ──────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
