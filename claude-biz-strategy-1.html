@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Commerce — Build & Sell AI Products</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --accent: #c8401a;
+    --gold: #c9a84c;
+    --muted: #7a7060;
+    --border: #d0c8b8;
+    --green: #2d6a4f;
+    --blue: #1a3a5c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 0 40px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .header-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.08em;
+    padding: 18px 0;
+    color: var(--paper);
+  }
+
+  .header-logo span { color: var(--gold); }
+
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-tag::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* HERO */
+  .hero {
+    padding: 60px 40px 50px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: end;
+  }
+
+  .hero-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    line-height: 1.05;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-left h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-left p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 480px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .stat-cell {
+    background: var(--paper);
+    padding: 24px;
+    position: relative;
+  }
+
+  .stat-cell .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+
+  .stat-cell .num span { color: var(--accent); }
+
+  .stat-cell .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* TABS */
+  .tab-nav {
+    display: flex;
+    border-bottom: 2px solid var(--ink);
+    padding: 0 40px;
+    gap: 0;
+    background: var(--cream);
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 16px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+    background: var(--paper);
+  }
+
+  /* MAIN CONTENT */
+  .main { padding: 50px 40px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* OPPORTUNITY CARDS */
+  .section-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 36px;
+    gap: 40px;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 400px;
+    margin-top: 6px;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .filter-chip:hover, .filter-chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .product-card {
+    background: var(--paper);
+    padding: 28px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .product-card:hover { background: var(--cream); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .card-icon {
+    width: 42px; height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background: var(--cream);
+    border: 1px solid var(--border);
+  }
+
+  .card-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .card-badge.hot { background: var(--accent); }
+  .card-badge.new { background: var(--green); }
+  .card-badge.mcp { background: var(--blue); }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .card-desc {
+    font-size: 0.83rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .price-range {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+  }
+
+  .price-range span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .difficulty-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .difficulty-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .diff-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .diff-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .diff-dot.fill { background: var(--ink); }
+  .diff-dot.fill.hard { background: var(--accent); }
+
+  /* DETAIL PANEL */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.7);
+    z-index: 500;
+    backdrop-filter: blur(4px);
+  }
+
+  .detail-overlay.open { display: flex; align-items: flex-start; justify-content: flex-end; }
+
+  .detail-panel {
+    width: 520px;
+    max-width: 95vw;
+    height: 100vh;
+    background: var(--paper);
+    overflow-y: auto;
+    padding: 40px;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 2px solid var(--ink);
+  }
+
+  .detail-overlay.open .detail-panel {
+    transform: translateX(0);
+  }
+
+  .detail-close {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 10px 18px;
+    cursor: pointer;
+    margin-bottom: 32px;
+    display: inline-block;
+  }
+
+  .detail-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .detail-section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .detail-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .detail-list li {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cream);
+    list-style: none;
+    padding-left: 16px;
+    position: relative;
+    color: var(--ink);
+  }
+
+  .detail-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.75rem;
+  }
+
+  .pitch-block {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+
+  .prompt-block {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* PLAYBOOK TAB */
+  .playbook-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .playbook-step {
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--cream);
+    position: absolute;
+    top: 12px; right: 20px;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+
+  .step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .step-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-body {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-body ul { padding-left: 0; margin-top: 10px; }
+  .step-body li {
+    list-style: none;
+    padding: 5px 0 5px 16px;
+    position: relative;
+    border-bottom: 1px solid var(--cream);
+    font-size: 0.82rem;
+  }
+  .step-body li::before { content: '·'; position: absolute; left: 4px; color: var(--accent); font-size: 1rem; line-height: 1.2; }
+
+  /* PRICING TAB */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 32px;
+  }
+
+  .price-tier {
+    background: var(--paper);
+    padding: 32px 28px;
+  }
+
+  .price-tier.featured { background: var(--ink); color: var(--paper); }
+
+  .tier-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .tier-price {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    margin: 16px 0 4px;
+  }
+
+  .tier-price sup {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 1rem;
+    vertical-align: super;
+  }
+
+  .tier-cycle {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+    margin-bottom: 20px;
+  }
+
+  .tier-includes {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+
+  .tier-feature {
+    font-size: 0.83rem;
+    line-height: 1.5;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .price-tier.featured .tier-feature { border-bottom-color: rgba(255,255,255,0.08); }
+
+  .tier-feature::before { content: '✓'; color: var(--gold); font-size: 0.75rem; margin-top: 1px; flex-shrink: 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .playbook-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .section-intro { flex-direction: column; gap: 16px; }
+    header { padding: 0 20px; }
+    .main { padding: 30px 20px; }
+    .tab-nav { padding: 0 20px; }
+    .hero { padding: 40px 20px 40px; }
+  }
+
+  /* ANIMATION */
+  .product-card { animation: fadeUp 0.4s both; }
+  .product-card:nth-child(2) { animation-delay: 0.05s; }
+  .product-card:nth-child(3) { animation-delay: 0.1s; }
+  .product-card:nth-child(4) { animation-delay: 0.15s; }
+  .product-card:nth-child(5) { animation-delay: 0.2s; }
+  .product-card:nth-child(6) { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">Claude<span>Commerce</span></div>
+  <div class="header-tag">AI Products for Small Business · Strategy Guide</div>
+</header>
+
+<section class="hero">
+  <div class="hero-left">
+    <h1>Build & Sell<br><em>AI Products</em><br>That Businesses<br>Actually Need</h1>
+    <p>A complete playbook for identifying, building, and packaging Claude Artifacts and MCP skills into recurring revenue streams. Filter by industry, effort level, and earning potential.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-cell">
+      <div class="num">18<span>+</span></div>
+      <div class="label">Product Opportunities</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num">$<span>2K</span></div>
+      <div class="label">Avg Monthly Per Client</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num">6<span>hr</span></div>
+      <div class="label">Avg Build Time</div>
+    </div>
+    <div class="stat-cell">
+      <div class="num">4<span>×</span></div>
+      <div class="label">Revenue Multiplier (MCP)</div>
+    </div>
+  </div>
+</section>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="products">Product Catalog</button>
+  <button class="tab-btn" data-tab="playbook">Go-To-Market Playbook</button>
+  <button class="tab-btn" data-tab="pricing">Pricing Strategy</button>
+  <button class="tab-btn" data-tab="pitches">Sales Scripts</button>
+</nav>
+
+<main class="main">
+
+  <!-- PRODUCTS TAB -->
+  <div class="tab-panel active" id="tab-products">
+    <div class="section-intro">
+      <div>
+        <div class="section-title">Product Opportunities</div>
+        <div class="section-desc">Click any product to see build specs, sales pitch, and starter prompt templates.</div>
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="artifact">Artifact Only</button>
+        <button class="filter-chip" data-filter="mcp">MCP Skill</button>
+        <button class="filter-chip" data-filter="easy">Easy Build</button>
+        <button class="filter-chip" data-filter="high">High Revenue</button>
+      </div>
+    </div>
+
+    <div class="product-grid" id="product-grid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+
+  <!-- PLAYBOOK TAB -->
+  <div class="tab-panel" id="tab-playbook">
+    <div class="section-title" style="margin-bottom:12px">The 7-Step Go-To-Market Playbook</div>
+    <div class="section-desc" style="margin-bottom:36px">From zero to your first paying client in 2 weeks.</div>
+    <div class="playbook-grid">
+
+      <div class="playbook-step">
+        <div class="step-num">01</div>
+        <div class="step-label">Foundation</div>
+        <div class="step-title">Pick Your Niche Vertical</div>
+        <div class="step-body">Don't sell to "small businesses." Pick one industry and go deep.
+          <ul>
+            <li>Restaurants / food & bev (highest pain, fastest close)</li>
+            <li>Local service businesses (plumbers, electricians, HVAC)</li>
+            <li>Real estate agencies</li>
+            <li>Medical / dental practices</li>
+            <li>Law firms (solo &amp; small)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">02</div>
+        <div class="step-label">Validation</div>
+        <div class="step-title">Find the $10K Problem</div>
+        <div class="step-body">Interview 5 businesses in your niche before building anything. Ask:
+          <ul>
+            <li>"What task does your team hate doing most?"</li>
+            <li>"What's the last thing that fell through the cracks?"</li>
+            <li>"If you had an extra staff member, what would they do?"</li>
+            <li>Map time × wage × frequency to quantify the pain</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">03</div>
+        <div class="step-label">Build</div>
+        <div class="step-title">Build the MVP in One Day</div>
+        <div class="step-body">Claude Artifacts = zero infrastructure. Start simple.
+          <ul>
+            <li>Pick one product from the catalog (Artifact first)</li>
+            <li>Customize branding, prompts, and data for their business</li>
+            <li>Add their logo, colors, and example data</li>
+            <li>Time target: 4–8 hours for first version</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">04</div>
+        <div class="step-label">Proof</div>
+        <div class="step-title">Offer One Free Pilot</div>
+        <div class="step-body">Give one business a 2-week free trial in exchange for:
+          <ul>
+            <li>A video testimonial on results</li>
+            <li>Permission to use their name &amp; metrics</li>
+            <li>A referral to one other business owner</li>
+            <li>Document everything as a case study</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">05</div>
+        <div class="step-label">Package</div>
+        <div class="step-title">Create Your "Menu"</div>
+        <div class="step-body">Bundle products into tiers, not à la carte.
+          <ul>
+            <li>Starter: 1 Artifact + setup + 30-day support</li>
+            <li>Growth: 3 Artifacts + custom training + monthly check-in</li>
+            <li>Enterprise: Full MCP integration + dedicated build hours</li>
+            <li>Add retainer: "AI updates &amp; optimization" $200–$500/mo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">06</div>
+        <div class="step-label">Sell</div>
+        <div class="step-title">Lead With the ROI Story</div>
+        <div class="step-body">Never lead with "AI" — lead with the outcome.
+          <ul>
+            <li>"Save 8 hours/week on customer replies" not "AI chatbot"</li>
+            <li>Show the demo in the first 60 seconds of every meeting</li>
+            <li>Anchor against hiring: "$1,500/mo vs $4,500/mo for staff"</li>
+            <li>Use the case study from Step 4 as social proof</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="playbook-step">
+        <div class="step-num">07</div>
+        <div class="step-label">Scale</div>
+        <div class="step-title">Productize &amp; Repeat</div>
+        <div class="step-body">Once 3+ clients are on the same product, systematize it.
+          <ul>
+            <li>Build an onboarding template (Notion or PDF)</li>
+            <li>Create a customization checklist per industry</li>
+            <li>Hire a VA to handle setup for new clients</li>
+            <li>Add MCP integrations to justify price increases</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRICING TAB -->
+  <div class="tab-panel" id="tab-pricing">
+    <div class="section-title">Pricing Strategy That Converts</div>
+    <div class="section-desc" style="margin-top:8px">Anchor on value destruction prevented, not hours worked. These are battle-tested price points for the small business market.</div>
+
+    <div class="pricing-grid">
+      <div class="price-tier">
+        <div class="tier-name">Starter</div>
+        <div class="tier-price"><sup>$</sup>497</div>
+        <div class="tier-cycle">one-time setup + $197/mo</div>
+        <div class="tier-includes">Includes</div>
+        <div class="tier-feature">1 Custom Claude Artifact</div>
+        <div class="tier-feature">Brand customization (colors, logo, tone)</div>
+        <div class="tier-feature">30-day email support</div>
+        <div class="tier-feature">Training session (60 min)</div>
+        <div class="tier-feature">Monthly prompt updates</div>
+      </div>
+
+      <div class="price-tier featured">
+        <div class="tier-name">Growth</div>
+        <div class="tier-price"><sup>$</sup>1,497</div>
+        <div class="tier-cycle">one-time setup + $497/mo</div>
+        <div class="tier-includes">Everything in Starter, plus</div>
+        <div class="tier-feature">3 Custom Claude Artifacts</div>
+        <div class="tier-feature">Staff training workshop (2hr)</div>
+        <div class="tier-feature">Google Drive / Sheets integration</div>
+        <div class="tier-feature">Monthly strategy call + optimization</div>
+        <div class="tier-feature">Priority support + new AI features</div>
+      </div>
+
+      <div class="price-tier">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price"><sup>$</sup>3,500</div>
+        <div class="tier-cycle">one-time setup + $1,200/mo</div>
+        <div class="tier-includes">Everything in Growth, plus</div>
+        <div class="tier-feature">Full MCP skill suite (5+ integrations)</div>
+        <div class="tier-feature">CRM / POS system connection</div>
+        <div class="tier-feature">Custom AI agent workflows</div>
+        <div class="tier-feature">Dedicated build hours (8hr/mo)</div>
+        <div class="tier-feature">Quarterly business review</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px; display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border);">
+      <div style="background:var(--paper); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:12px;">Pricing Psychology Tips</div>
+        <ul class="detail-list">
+          <li>Always quote annual value destroyed, not monthly cost</li>
+          <li>Offer a 14-day "results guarantee" — reduces risk objection</li>
+          <li>Bundle support retainer into setup fee: looks like better value</li>
+          <li>Use odd pricing ($497 not $500) to signal precise costing</li>
+          <li>Charge more to restaurants than solo service businesses</li>
+        </ul>
+      </div>
+      <div style="background:var(--cream); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:12px;">Revenue Model Benchmarks</div>
+        <ul class="detail-list">
+          <li>5 Starter clients = $985/mo recurring</li>
+          <li>5 Growth clients = $2,485/mo recurring</li>
+          <li>3 Enterprise clients = $3,600/mo recurring</li>
+          <li>Mixed portfolio (10 clients) = ~$5–8K/mo</li>
+          <li>Add upsell: "AI audit" report at $350 one-time</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PITCHES TAB -->
+  <div class="tab-panel" id="tab-pitches">
+    <div class="section-title" style="margin-bottom:8px">Sales Scripts & Cold Outreach</div>
+    <div class="section-desc" style="margin-bottom:36px">Proven frameworks for each stage of the sales process. Customize with the client's name and specific pain point.</div>
+
+    <div style="display:grid; gap:24px;">
+
+      <div style="border:1px solid var(--border); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); margin-bottom:12px;">Cold DM / Email — Subject: Quick question about [Business Name]</div>
+        <div class="pitch-block">Hi [Name],
+
+I noticed [Business Name] has been around for [X years] — impressive.
+
+I help [restaurants / service businesses / etc.] in [city] save 6–10 hours per week by automating the tasks your team dreads. I built a quick demo specifically for a business like yours.
+
+Would you be open to a 15-minute screen share this week? I'll show you the demo even if you decide it's not for you.
+
+No pitch deck, just the tool running live.
+
+— [Your name]</div>
+      </div>
+
+      <div style="border:1px solid var(--border); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); margin-bottom:12px;">Discovery Call — Opening Frame</div>
+        <div class="pitch-block">"Before I show you anything, I want to make sure this is actually relevant for you. 
+
+Can I ask — what's the most repetitive thing your team does every week that feels like it should be handled automatically by now?
+
+[Let them talk for 2+ minutes. Take notes. Reflect back the exact words they use.]
+
+Got it. That's exactly the kind of thing I've been building solutions for. Let me show you what I built for a [similar business] last month — took them from 3 hours a day on that to about 20 minutes."</div>
+      </div>
+
+      <div style="border:1px solid var(--border); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); margin-bottom:12px;">Objection: "We already use [ChatGPT / some tool]"</div>
+        <div class="pitch-block">"That's great — most of my best clients started there. The difference is that what I build is trained specifically on your business: your menu, your prices, your tone, your common customer questions.
+
+Generic AI gives generic answers. What I build feels like your best employee — the one who never leaves and never forgets anything.
+
+Can I show you the difference in 5 minutes? I'll put your actual business info in and you can see it live."</div>
+      </div>
+
+      <div style="border:1px solid var(--border); padding:28px;">
+        <div style="font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent); margin-bottom:12px;">Objection: "It's too expensive"</div>
+        <div class="pitch-block">"I hear you. Let me put it in perspective.
+
+You mentioned [task] takes about [X hours/week] across your team. At [$Y/hr], that's [$Z/month] in staff time — and that doesn't include the mistakes or the things that fall through the cracks.
+
+The Growth plan is $497/month. That's [fraction] of what you're already spending. And if it doesn't save you at least that in time in the first 30 days, I'll refund the setup fee, no questions.
+
+Does that feel fairer?"</div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" id="detail-close">← Back to catalog</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  {
+    id: 1,
+    icon: "💬",
+    badge: "hot",
+    badgeText: "Most Popular",
+    type: "artifact",
+    difficulty: 1,
+    title: "Customer FAQ & Booking Assistant",
+    desc: "Trained on the business's actual FAQ, menu/services, hours, and policies. Handles 80% of incoming chat questions instantly.",
+    price: "$500–$1,500",
+    priceSub: "setup + retainer",
+    industries: ["Restaurants", "Salons", "Service businesses", "Retail"],
+    painSolved: "Owners spend 2–4 hours/day answering the same 10 questions via DM, phone, and email.",
+    whatYouBuild: [
+      "Custom Claude Artifact with their FAQ as the knowledge base",
+      "Embed instructions to route complex questions to a human",
+      "Branded with their business name, tone, and personality",
+      "Trained on their menu, pricing, hours, and location",
+      "Optional: Add booking link or phone number prompts"
+    ],
+    salesPitch: "\"Right now, every time someone DMs you 'do you have parking?' or 'what are your hours?' — that's 2 minutes of your time. Multiply that by 40 messages a day. I can build you an assistant that handles all of those in seconds, 24/7, and only passes the real questions to you.\"",
+    starterPrompt: `You are a helpful assistant for [Business Name], a [type of business] located at [address].
+
+HOURS: [Mon-Fri X-X, Sat X-X, Sun Closed]
+PHONE: [number]
+BOOKING: [link or "call us"]
+
+COMMON QUESTIONS YOU CAN ANSWER:
+- Parking: [details]
+- Menu/Services: [list top items]
+- Pricing: [ranges]
+- Policies: [cancellation, etc.]
+
+If you cannot answer a question, say: "Great question! Let me connect you with [Name] directly — [contact info]."
+
+Always be warm, brief, and helpful. Never make up information.`
+  },
+  {
+    id: 2,
+    icon: "📝",
+    badge: "hot",
+    badgeText: "High Volume",
+    type: "artifact",
+    difficulty: 1,
+    title: "Review Response Generator",
+    desc: "Generates personalized, on-brand responses to Google and Yelp reviews in seconds. Handles positive, neutral, and negative reviews.",
+    price: "$300–$800",
+    priceSub: "setup + monthly",
+    industries: ["Restaurants", "Hotels", "Any local business"],
+    painSolved: "Business owners know they should respond to reviews but it takes 10–20 min per response and they put it off for weeks.",
+    whatYouBuild: [
+      "Artifact that takes review text as input + star rating",
+      "Generates 3 response variations (formal, friendly, brief)",
+      "Trained on business name, owner name, and brand voice",
+      "Includes prompts to address specific complaints diplomatically",
+      "Optional: Bulk mode for responding to 10 reviews at once"
+    ],
+    salesPitch: "\"Businesses that respond to reviews get 35% more clicks on Google. But it takes forever to write good responses. I can build you a tool where you paste in a review and get 3 perfect responses in 10 seconds — you just pick one and post it.\"",
+    starterPrompt: `You are a review response assistant for [Business Name].
+
+Business info: [brief description]
+Owner name: [name]
+Brand voice: [warm/professional/casual]
+
+When given a review + star rating, generate 3 response options:
+1. WARM & PERSONAL — mentions specifics from their review
+2. PROFESSIONAL & BRIEF — 2 sentences max
+3. RECOVERY (for negative reviews) — acknowledge, apologize, offer resolution
+
+Never be defensive. Always invite them back. Sign off as "[Owner Name] & the [Business] team"`
+  },
+  {
+    id: 3,
+    icon: "📊",
+    badge: "new",
+    badgeText: "High Value",
+    type: "artifact",
+    difficulty: 2,
+    title: "Weekly Business Report Generator",
+    desc: "Owner pastes in weekly numbers (sales, bookings, no-shows, popular items). AI generates a formatted business summary with insights and action items.",
+    price: "$800–$2,000",
+    priceSub: "setup + monthly",
+    industries: ["Restaurants", "Gyms", "Spas", "Retail shops"],
+    painSolved: "Owners have data in their POS but no time or skill to interpret it. They fly blind week to week.",
+    whatYouBuild: [
+      "Artifact with structured input fields for key metrics",
+      "Generates executive summary, highlights, and red flags",
+      "Compares to previous week and identifies trends",
+      "Produces actionable recommendations in plain English",
+      "Optional: Email-ready format for sharing with partners/staff"
+    ],
+    salesPitch: "\"You're sitting on a goldmine of data in your POS system, but you never have time to analyze it. I'll build you a tool where you paste your weekly numbers and get back a one-page report in 30 seconds: what's working, what's not, and exactly what to do next week.\"",
+    starterPrompt: `You are a business analyst for [Business Name].
+
+Each week, the owner will provide:
+- Total revenue
+- Top 5 selling items
+- Slow-moving items
+- Customer count
+- No-shows or cancellations
+- Any notable events or issues
+
+Generate a structured weekly report with:
+1. EXECUTIVE SUMMARY (2 sentences)
+2. WINS THIS WEEK
+3. AREAS TO WATCH
+4. 3 SPECIFIC ACTION ITEMS for next week
+
+Write for a busy owner who needs clarity, not jargon.`
+  },
+  {
+    id: 4,
+    icon: "📧",
+    badge: "default",
+    badgeText: "Steady Income",
+    type: "artifact",
+    difficulty: 1,
+    title: "Email & SMS Campaign Writer",
+    desc: "Generates promotional emails and SMS blasts for seasonal offers, events, and re-engagement campaigns tailored to their customer base.",
+    price: "$400–$900",
+    priceSub: "setup + per-use or monthly",
+    industries: ["Any local business with email list"],
+    painSolved: "Businesses have email lists but never use them because writing emails feels hard and time-consuming.",
+    whatYouBuild: [
+      "Artifact that takes offer details and generates email + SMS versions",
+      "3 subject line options for A/B testing",
+      "Trained on business voice, seasonal promotions, and audience",
+      "Includes call-to-action and offer expiry language",
+      "Optional: Monthly content calendar generator"
+    ],
+    salesPitch: "\"Your email list is like cash sitting in a drawer. Every business owner I talk to says they know they should email more but never do it because it takes too long. I'll build you a tool where you type in your offer and get a ready-to-send email in 45 seconds.\"",
+    starterPrompt: `You are an email marketing copywriter for [Business Name].
+
+Business type: [description]
+Target customer: [description]
+Brand voice: [energetic/warm/professional]
+Signature offers: [list seasonal deals, loyalty programs, etc.]
+
+Given an offer or event, produce:
+- EMAIL: Subject line (3 options), body (150-200 words), CTA button text
+- SMS: 160-character version
+- SUBJECT LINE SPLIT TEST: 1 curiosity hook, 1 direct offer, 1 social proof version
+
+Always include urgency ("this week only", "limited spots") where relevant.`
+  },
+  {
+    id: 5,
+    icon: "🤝",
+    badge: "mcp",
+    badgeText: "MCP Skill",
+    type: "mcp",
+    difficulty: 3,
+    title: "Google Calendar + Booking Intelligence",
+    desc: "MCP skill that connects Claude to their Google Calendar. Handles scheduling, sends reminders, flags double-bookings, and generates daily schedules.",
+    price: "$1,500–$3,500",
+    priceSub: "setup + $400/mo",
+    industries: ["Consultants", "Therapists", "Personal trainers", "Contractors"],
+    painSolved: "Manual scheduling eats 1–2 hours/day and double-bookings destroy trust with clients.",
+    whatYouBuild: [
+      "Google Calendar MCP integration for read/write access",
+      "AI can check availability, create events, and send reminders",
+      "Daily briefing: 'Here's your day, here's what needs prep'",
+      "No-show follow-up automation",
+      "Optional: Integrate with Calendly or Acuity"
+    ],
+    salesPitch: "\"Imagine asking your AI assistant 'schedule a call with John next Tuesday afternoon' and it's done — it checks your calendar, sends the invite, and reminds you 30 minutes before. That's what this MCP integration does. No more back-and-forth emails.\"",
+    starterPrompt: `[MCP Integration — Google Calendar]
+
+Connected tools: google_calendar_read, google_calendar_write, gmail_send
+
+Daily prompt template:
+"It's [day]. Here's [Owner Name]'s schedule for today: [events]. 
+Flag: [any back-to-back meetings, prep needed, travel time required].
+Reminder draft for tomorrow's clients: [auto-generate]"`
+  },
+  {
+    id: 6,
+    icon: "📦",
+    badge: "mcp",
+    badgeText: "MCP Skill",
+    type: "mcp",
+    difficulty: 3,
+    title: "Inventory & Supplier Intelligence",
+    desc: "Connects to Google Sheets inventory tracker. Monitors stock levels, flags low inventory, drafts supplier orders, and tracks spend by category.",
+    price: "$2,000–$4,000",
+    priceSub: "setup + $500/mo",
+    industries: ["Restaurants", "Retail shops", "Caterers", "Breweries"],
+    painSolved: "Running out of key ingredients or products costs hundreds to thousands per incident in lost sales and emergency orders.",
+    whatYouBuild: [
+      "Google Sheets MCP integration (read/write)",
+      "Auto-detects when items hit reorder threshold",
+      "Drafts purchase order emails to suppliers",
+      "Weekly inventory cost analysis vs previous week",
+      "Optional: Photo-to-inventory update via Claude vision"
+    ],
+    salesPitch: "\"The last time you ran out of your #1 product on a Friday night — how much did that cost you? I can build a system that texts you every Monday morning with exactly what needs to be ordered, and drafts the supplier emails for you to approve in one click.\"",
+    starterPrompt: `[MCP Integration — Google Sheets]
+
+Sheet structure: | Item | Par Level | Current Stock | Supplier | Unit Cost | Last Ordered |
+
+Weekly analysis prompt:
+"Review the inventory sheet. Flag any items below par level. 
+Draft re-order emails for the top 3 urgent items. 
+Calculate this week's inventory value vs last week.
+Identify the top 3 items by cost that we're over-stocked on."`
+  },
+  {
+    id: 7,
+    icon: "👤",
+    badge: "hot",
+    badgeText: "Easy Build",
+    type: "artifact",
+    difficulty: 1,
+    title: "Staff Onboarding & Training Assistant",
+    desc: "New employees can ask questions about policies, procedures, menu items, or role expectations and get instant, accurate answers from the business's own documentation.",
+    price: "$600–$1,200",
+    priceSub: "setup + quarterly update",
+    industries: ["Restaurants", "Retail", "Any business with high turnover"],
+    painSolved: "Onboarding new staff takes 10–15 hours of manager time per hire. High-turnover businesses do this 6–10 times per year.",
+    whatYouBuild: [
+      "Artifact trained on their staff handbook / SOP documents",
+      "Q&A mode for new hires to ask about procedures",
+      "Role-specific modes (server, cook, front desk, etc.)",
+      "Quiz mode: tests new hires on key policies",
+      "Optional: Multi-language support for diverse teams"
+    ],
+    salesPitch: "\"Every time you hire someone new, you spend 2 weeks answering 'where is the mop?' and 'what do I do if a customer complains?' I can build a training assistant your new staff can ask anything — and get the right answer immediately — without pulling a manager away.\"",
+    starterPrompt: `You are the training assistant for [Business Name]. 
+You help new team members understand our policies, procedures, and standards.
+
+ROLE: [specific role being trained]
+KEY POLICIES: [list key rules, dress code, call-out policy, etc.]
+PROCEDURES: [opening/closing, handling complaints, POS basics, etc.]
+
+Answer questions clearly and specifically. If you're unsure, say "Check with [Manager Name] on that one."
+Always end answers with "Does that make sense? What else can I help you with?"`
+  },
+  {
+    id: 8,
+    icon: "📈",
+    badge: "new",
+    badgeText: "Premium",
+    type: "artifact",
+    difficulty: 2,
+    title: "Proposal & Quote Generator",
+    desc: "Service businesses input job details, client name, and scope. AI generates a professional, branded proposal with pricing, timeline, and terms in under 60 seconds.",
+    price: "$700–$1,800",
+    priceSub: "setup + monthly",
+    industries: ["Contractors", "Landscapers", "Consultants", "Agencies", "Cleaners"],
+    painSolved: "Writing custom proposals takes 45–90 minutes each. Many service businesses lose jobs because their proposals are slow or unprofessional.",
+    whatYouBuild: [
+      "Artifact with input fields (client name, job type, scope, timeline)",
+      "Generates professional proposal with all standard sections",
+      "Pre-loaded with their service list, pricing tiers, and terms",
+      "Multiple proposal styles (formal, conversational, estimate-style)",
+      "Optional: Export-ready format for PDF or email"
+    ],
+    salesPitch: "\"How long does it take you to write a proposal right now? An hour? Two? What if you could type in the job details and have a professional proposal ready to send in 60 seconds? I've had contractors tell me they close 30% more jobs just because they respond faster.\"",
+    starterPrompt: `You are a proposal writer for [Business Name], a [service type] company.
+
+Services offered: [list with typical price ranges]
+Standard terms: [payment terms, warranty, cancellation policy]
+Brand voice: [professional/friendly/direct]
+
+Given: Client name, job description, estimated scope, timeline
+Generate: 
+1. Executive summary (2 sentences)
+2. Scope of work (bullet points)
+3. Investment summary (line items + total)
+4. Timeline
+5. Next steps / acceptance instructions`
+  },
+  {
+    id: 9,
+    icon: "🔍",
+    badge: "mcp",
+    badgeText: "MCP Skill",
+    type: "mcp",
+    difficulty: 4,
+    title: "Competitor & Market Intelligence",
+    desc: "MCP web search skill that researches competitors, monitors their pricing changes, and produces weekly competitive briefings automatically.",
+    price: "$2,500–$5,000",
+    priceSub: "setup + $600/mo",
+    industries: ["Any competitive local market"],
+    painSolved: "Small businesses are always the last to know when competitors change prices, launch new offers, or expand services.",
+    whatYouBuild: [
+      "Web search MCP integration",
+      "Weekly automated scan of 5 competitor profiles",
+      "Price monitoring and change alerts",
+      "Review sentiment comparison vs competitors",
+      "Monthly 'competitive landscape' PDF report"
+    ],
+    salesPitch: "\"Your top competitor changed their pricing last month and you probably didn't know for 3 weeks. I can build you an intelligence system that monitors your top 5 competitors every week and sends you a briefing: new offers, price changes, what customers are saying about them.\"",
+    starterPrompt: `[MCP Integration — Web Search]
+
+Weekly competitor monitoring:
+1. Search "[Competitor 1] [city] prices/menu/services 2025"
+2. Search "[Competitor 1] reviews recent" 
+3. Flag: any price changes, new offerings, or negative review patterns
+4. Repeat for competitors 2–5
+5. Generate: 1-page "Competitive Brief" with opportunities spotted`
+  }
+];
+
+function renderDots(level, max=4) {
+  let html = '<div class="diff-dots">';
+  for (let i = 1; i <= max; i++) {
+    const hard = level >= 3 ? ' hard' : '';
+    html += `<div class="diff-dot${i <= level ? ' fill' + hard : ''}"></div>`;
+  }
+  return html + '</div>';
+}
+
+function renderCards(filter = 'all') {
+  const grid = document.getElementById('product-grid');
+  let filtered = PRODUCTS;
+  if (filter === 'artifact') filtered = PRODUCTS.filter(p => p.type === 'artifact');
+  if (filter === 'mcp') filtered = PRODUCTS.filter(p => p.type === 'mcp');
+  if (filter === 'easy') filtered = PRODUCTS.filter(p => p.difficulty <= 1);
+  if (filter === 'high') filtered = PRODUCTS.filter(p => p.price.includes('2,') || p.price.includes('3,') || p.price.includes('4,') || p.price.includes('5,'));
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" data-id="${p.id}">
+      <div class="card-top">
+        <div class="card-icon">${p.icon}</div>
+        <div class="card-badge ${p.badge === 'hot' ? 'hot' : p.badge === 'new' ? 'new' : p.badge === 'mcp' ? 'mcp' : ''}">${p.badgeText}</div>
+      </div>
+      <div class="card-title">${p.title}</div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="card-meta">
+        <div class="price-range">
+          <span>Price Range</span>
+          ${p.price}
+        </div>
+        <div class="difficulty-bar">
+          <div class="difficulty-label">Build Effort</div>
+          ${renderDots(p.difficulty)}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', () => openDetail(+card.dataset.id));
+  });
+}
+
+function openDetail(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const overlay = document.getElementById('detail-overlay');
+  const content = document.getElementById('detail-content');
+
+  content.innerHTML = `
+    <div class="card-badge ${p.badge === 'hot' ? 'hot' : p.badge === 'new' ? 'new' : p.badge === 'mcp' ? 'mcp' : ''}" style="margin-bottom:16px">${p.badgeText}</div>
+    <div class="detail-title">${p.icon} ${p.title}</div>
+    <div style="font-size:0.88rem;color:var(--muted);line-height:1.6;margin-top:8px">${p.desc}</div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Pain Point Solved</div>
+      <div style="font-size:0.88rem;line-height:1.7;color:var(--ink);padding:12px;background:var(--cream);border-left:3px solid var(--accent)">${p.painSolved}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Best Industries</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+        ${p.industries.map(i => `<span style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;padding:5px 12px;border:1px solid var(--border);text-transform:uppercase">${i}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">What You Build</div>
+      <ul class="detail-list">
+        ${p.whatYouBuild.map(item => `<li>${item}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Pricing</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:4px">${p.price}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">${p.priceSub}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Sales Pitch</div>
+      <div class="pitch-block">${p.salesPitch}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Starter System Prompt</div>
+      <div class="prompt-block">${p.starterPrompt}</div>
+    </div>
+  `;
+
+  overlay.classList.add('open');
+}
+
+// INIT
+renderCards();
+
+// Filters
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    renderCards(chip.dataset.filter);
+  });
+});
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Close detail
+document.getElementById('detail-close').addEventListener('click', () => {
+  document.getElementById('detail-overlay').classList.remove('open');
+});
+document.getElementById('detail-overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+
+</body>
+</html>
