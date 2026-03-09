@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseGlobal — The World's Heartbeat</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050810;--bg2:#080d1a;--slate:#0e1628;
+  --neon:#00d4ff;--neon2:#0090ff;--neon3:#00ffb3;
+  --pulse:#ff3b6b;--gold:#f5a623;
+  --glass:rgba(14,22,50,0.6);--gb:rgba(0,212,255,0.18);
+  --text:#e2eaf8;--muted:#4a6480;
+  --fh:'Syne',sans-serif;--fm:'DM Mono',monospace;--fb:'Outfit',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);overflow-x:hidden;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:60px;background:rgba(5,8,16,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--gb);}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:800;font-size:1.2rem;color:var(--text);text-decoration:none;}
+.logo-dot{width:9px;height:9px;border-radius:50%;background:var(--neon);animation:pdot 2s infinite;}
+@keyframes pdot{0%,100%{box-shadow:0 0 6px var(--neon);}50%{box-shadow:0 0 22px var(--neon),0 0 44px rgba(0,212,255,.35);}}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--neon);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.nav-live{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:.65rem;color:var(--neon3);}
+.nl-dot{width:6px;height:6px;border-radius:50%;background:var(--neon3);animation:pdot 1.5s infinite;}
+.nav-btn{font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 18px;border:1px solid var(--neon);color:var(--neon);background:transparent;border-radius:4px;cursor:pointer;transition:all .2s;}
+.nav-btn:hover{background:rgba(0,212,255,.1);}
+
+#hero{position:relative;height:100vh;min-height:640px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg);}
+#globe-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;}
+.hero-grid{position:absolute;inset:0;z-index:2;background-image:linear-gradient(rgba(0,212,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.035) 1px,transparent 1px);background-size:55px 55px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent);pointer-events:none;}
+.hero-radial{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,100,255,.1) 0%,transparent 65%);z-index:2;pointer-events:none;}
+.hero-content{position:relative;z-index:10;text-align:center;max-width:720px;padding:0 2rem;pointer-events:none;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--neon);border:1px solid rgba(0,212,255,.3);padding:5px 14px;border-radius:100px;margin-bottom:1.8rem;background:rgba(0,212,255,.05);}
+.blink{width:5px;height:5px;border-radius:50%;background:var(--neon);animation:bl 1s step-end infinite;}
+@keyframes bl{50%{opacity:0;}}
+.hero-h1{font-family:var(--fh);font-size:clamp(3rem,8vw,6.5rem);font-weight:800;line-height:.95;letter-spacing:-.04em;margin-bottom:1.3rem;}
+.line1{display:block;color:var(--text);}
+.line2{display:block;background:linear-gradient(135deg,#fff 0%,var(--neon) 55%,var(--neon2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 25px rgba(0,212,255,.45));}
+.hero-p{font-size:1.05rem;color:var(--muted);line-height:1.75;font-weight:300;margin-bottom:2.2rem;}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;pointer-events:all;}
+.btn-p{padding:13px 30px;font-family:var(--fm);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(135deg,var(--neon2),var(--neon));color:#050810;border:none;border-radius:6px;cursor:pointer;font-weight:500;box-shadow:0 0 30px rgba(0,144,255,.35);transition:box-shadow .25s;}
+.btn-p:hover{box-shadow:0 0 50px rgba(0,144,255,.6);}
+.btn-g{padding:13px 30px;font-family:var(--fm);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.15);border-radius:6px;cursor:pointer;transition:all .25s;}
+.btn-g:hover{border-color:rgba(0,212,255,.4);color:var(--neon);}
+.scroll-hint{position:absolute;bottom:1.8rem;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:7px;font-family:var(--fm);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.sline{width:1px;height:44px;background:linear-gradient(to bottom,var(--neon),transparent);animation:sl 2s ease-in-out infinite;}
+@keyframes sl{0%,100%{opacity:.25;}50%{opacity:1;}}
+
+/* QUICKVIEW */
+#qv{position:fixed;z-index:500;width:300px;background:rgba(6,12,28,.97);backdrop-filter:blur(30px);border:1px solid var(--gb);border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 30px rgba(0,212,255,.08);opacity:0;pointer-events:none;transform:scale(.94) translateY(8px);transition:opacity .22s,transform .22s;}
+#qv.show{opacity:1;pointer-events:all;transform:scale(1) translateY(0);}
+.qv-vid{width:100%;height:130px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#06101e,#0c1e38);}
+.qv-vgrid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.06) 1px,transparent 1px);background-size:18px 18px;}
+.qv-vglow{position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,rgba(0,144,255,.3),transparent 60%);}
+.qv-play{width:40px;height:40px;border-radius:50%;background:rgba(0,212,255,.15);border:1.5px solid var(--neon);display:flex;align-items:center;justify-content:center;z-index:1;box-shadow:0 0 16px rgba(0,212,255,.4);}
+.qv-play::after{content:"▶";font-size:.8rem;color:var(--neon);margin-left:3px;}
+.qv-tbadge{position:absolute;bottom:7px;right:9px;font-family:var(--fm);font-size:.65rem;color:var(--neon);background:rgba(0,0,0,.6);padding:2px 7px;border-radius:3px;z-index:2;}
+.qv-bar{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(to right,var(--neon2),var(--neon));width:0%;}
+.qv-bar.run{animation:qvp 5s linear forwards;}
+@keyframes qvp{to{width:100%;}}
+.qv-body{padding:12px 15px 15px;}
+.qv-reg{font-family:var(--fm);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--neon);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.qv-reg::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--neon);animation:pdot 1.5s infinite;flex-shrink:0;}
+.qv-title{font-family:var(--fh);font-size:.85rem;font-weight:700;line-height:1.3;margin-bottom:7px;}
+.qv-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.qv-src{font-family:var(--fm);font-size:.65rem;color:var(--muted);}
+.qv-stag{font-family:var(--fm);font-size:.62rem;padding:2px 7px;border-radius:4px;}
+.s-neg{background:rgba(255,59,107,.12);color:var(--pulse);border:1px solid rgba(255,59,107,.3);}
+.s-pos{background:rgba(0,255,179,.1);color:var(--neon3);border:1px solid rgba(0,255,179,.25);}
+.s-neu{background:rgba(0,144,255,.1);color:var(--neon2);border:1px solid rgba(0,144,255,.2);}
+
+/* TICKER */
+.ticker{background:var(--slate);border-top:1px solid var(--gb);border-bottom:1px solid var(--gb);padding:9px 0;overflow:hidden;position:relative;}
+.t-lbl{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;padding:0 18px;background:linear-gradient(to right,var(--slate) 65%,transparent);font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--neon);}
+.t-track{display:flex;gap:3rem;white-space:nowrap;animation:tick 80s linear infinite;padding-left:160px;}
+@keyframes tick{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ti{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.73rem;color:var(--muted);}
+.td{width:4px;height:4px;border-radius:50%;background:var(--neon);flex-shrink:0;}
+.ti-hot{color:#ffb347;}
+
+.wrap{max-width:1360px;margin:0 auto;padding:5rem 2.5rem;}
+.sec-lbl{font-family:var(--fm);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--neon);margin-bottom:.6rem;display:flex;align-items:center;gap:10px;}
+.sec-lbl::before{content:"";flex:0 0 28px;height:1px;background:var(--neon);}
+.sec-title{font-family:var(--fh);font-size:clamp(1.9rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.8rem;}
+.sec-sub{color:var(--muted);font-size:.95rem;font-weight:300;max-width:480px;line-height:1.7;}
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.2rem;gap:1.5rem;flex-wrap:wrap;}
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--pulse);padding:4px 12px;border-radius:4px;background:rgba(255,59,107,.1);border:1px solid rgba(255,59,107,.28);}
+.live-d{width:5px;height:5px;border-radius:50%;background:var(--pulse);animation:pdot 1.2s infinite;}
+
+/* BENTO */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;}
+.card{background:var(--glass);backdrop-filter:blur(18px) saturate(170%);border:1px solid var(--gb);border-radius:18px;overflow:hidden;transition:border-color .3s,transform .3s,box-shadow .3s;cursor:pointer;position:relative;}
+.card:hover{border-color:rgba(0,212,255,.5);transform:translateY(-3px);box-shadow:0 16px 50px rgba(0,0,0,.4),0 0 0 1px rgba(0,212,255,.15);}
+.card-read-hint{position:absolute;bottom:12px;right:14px;font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--neon);opacity:0;transition:opacity .25s;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.25);padding:3px 9px;border-radius:4px;z-index:5;}
+.card:hover .card-read-hint{opacity:1;}
+
+/* ARTICLE MODAL */
+#modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(2,5,14,.85);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:opacity .3s;}
+#modal-overlay.open{opacity:1;pointer-events:all;}
+#modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);z-index:901;width:min(820px,94vw);max-height:88vh;background:var(--bg2);border:1px solid var(--gb);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 60px rgba(0,212,255,.07);opacity:0;transition:opacity .32s,transform .32s;}
+#modal.open{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.modal-hero{width:100%;height:240px;position:relative;overflow:hidden;background:linear-gradient(135deg,#060f20,#0c1e38);flex-shrink:0;}
+.modal-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.06) 1px,transparent 1px);background-size:32px 32px;}
+.modal-orb1{position:absolute;width:280px;height:280px;border-radius:50%;background:#0060ff;opacity:.35;top:-60px;right:-40px;filter:blur(70px);animation:oa 9s ease-in-out infinite;}
+.modal-orb2{position:absolute;width:200px;height:200px;border-radius:50%;background:#00ffb3;opacity:.25;bottom:-50px;left:60px;filter:blur(60px);animation:ob 11s ease-in-out infinite;}
+.modal-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,var(--bg2) 0%,transparent 55%);}
+.modal-hero-meta{position:absolute;bottom:20px;left:28px;right:28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10;}
+.modal-close:hover{background:rgba(255,59,107,.2);border-color:var(--pulse);color:var(--pulse);}
+.modal-scroll{overflow-y:auto;flex:1;padding:0 28px 32px;}
+.modal-scroll::-webkit-scrollbar{width:4px;}
+.modal-scroll::-webkit-scrollbar-track{background:transparent;}
+.modal-scroll::-webkit-scrollbar-thumb{background:var(--gb);border-radius:2px;}
+.modal-title{font-family:var(--fh);font-size:clamp(1.3rem,3.5vw,1.85rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin:22px 0 14px;}
+.modal-byline{display:flex;align-items:center;gap:16px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;}
+.modal-src{font-family:var(--fm);font-size:.72rem;color:var(--neon);letter-spacing:.08em;}
+.modal-time{font-family:var(--fm);font-size:.68rem;color:var(--muted);}
+.modal-region-tag{font-family:var(--fm);font-size:.65rem;padding:3px 10px;border-radius:4px;margin-left:auto;}
+.modal-hype{display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:.68rem;color:var(--gold);}
+.modal-body{font-size:.96rem;color:rgba(226,234,248,.82);line-height:1.85;font-weight:300;}
+.modal-body p{margin-bottom:1.1rem;}
+.modal-body strong{color:var(--text);font-weight:600;}
+.modal-divider{height:1px;background:linear-gradient(to right,transparent,var(--gb),transparent);margin:22px 0;}
+.modal-context{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);border-radius:12px;padding:18px 20px;margin-bottom:20px;}
+.modal-context-lbl{font-family:var(--fm);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--neon);margin-bottom:10px;}
+.modal-context-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:.84rem;color:var(--muted);line-height:1.5;}
+.modal-context-item::before{content:"→";color:var(--neon);flex-shrink:0;margin-top:1px;}
+.modal-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
+.modal-tag{font-family:var(--fm);font-size:.63rem;letter-spacing:.08em;padding:4px 11px;border-radius:100px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--muted);}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:10px;}
+.modal-nav{display:flex;gap:10px;}
+.modal-nav-btn{font-family:var(--fm);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 18px;border-radius:6px;cursor:pointer;transition:all .2s;}
+.mn-prev{background:transparent;border:1px solid var(--gb);color:var(--muted);}
+.mn-prev:hover{border-color:var(--neon);color:var(--neon);}
+.mn-next{background:linear-gradient(135deg,var(--neon2),var(--neon));border:none;color:#050810;font-weight:600;}
+.mn-next:hover{box-shadow:0 0 20px rgba(0,212,255,.4);}
+.modal-sentiment-bar{display:flex;align-items:center;gap:10px;margin-top:18px;}
+.msb-lbl{font-family:var(--fm);font-size:.65rem;color:var(--muted);width:65px;}
+.msb-track{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;}
+.msb-fill{height:100%;border-radius:3px;transition:width 1s ease .3s;width:0%;}
+@media(max-width:600px){#modal{width:96vw;max-height:92vh;border-radius:16px;}.modal-hero{height:180px;}.modal-scroll{padding:0 18px 24px;}}
+.ci{padding:20px 22px;height:100%;display:flex;flex-direction:column;}
+.cat{font-family:var(--fm);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:4px;display:inline-block;margin-bottom:9px;}
+.cat-g{background:rgba(0,212,255,.12);color:var(--neon);border:1px solid rgba(0,212,255,.25);}
+.cat-t{background:rgba(0,255,179,.09);color:var(--neon3);border:1px solid rgba(0,255,179,.22);}
+.cat-e{background:rgba(245,166,35,.1);color:var(--gold);border:1px solid rgba(245,166,35,.25);}
+.cat-c{background:rgba(255,59,107,.1);color:var(--pulse);border:1px solid rgba(255,59,107,.25);}
+.cat-s{background:rgba(200,150,255,.1);color:#c77dff;border:1px solid rgba(200,150,255,.25);}
+.ct{font-family:var(--fh);font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:8px;}
+.ct-lg{font-size:1.35rem;}
+.cx{font-size:.83rem;color:var(--muted);line-height:1.65;flex:1;}
+.cm{display:flex;align-items:center;justify-content:space-between;margin-top:13px;gap:8px;flex-wrap:wrap;}
+.cs{font-family:var(--fm);font-size:.66rem;color:var(--muted);}
+.src-link{font-family:var(--fm);font-size:.65rem;color:var(--neon);text-decoration:none;padding:3px 10px;border:1px solid rgba(0,212,255,.3);border-radius:4px;transition:all .2s;white-space:nowrap;}
+.src-link:hover{background:rgba(0,212,255,.1);}
+.c7{grid-column:span 7;}.c5{grid-column:span 5;}.c4{grid-column:span 4;}.c3{grid-column:span 3;}.r2{grid-row:span 2;}
+.c-img{width:100%;height:210px;position:relative;overflow:hidden;background:linear-gradient(135deg,#060f20,#091a32);}
+.c-img-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.07) 1px,transparent 1px);background-size:28px 28px;}
+.orb{position:absolute;border-radius:50%;filter:blur(45px);}
+.o1{width:180px;height:180px;background:#0060ff;opacity:.4;top:-40px;right:20px;animation:oa 9s ease-in-out infinite;}
+.o2{width:140px;height:140px;background:#00ffb3;opacity:.3;bottom:-30px;left:30px;animation:ob 11s ease-in-out infinite;}
+.o3{width:100px;height:100px;background:#ff3b6b;opacity:.25;top:50%;left:55%;animation:oc 7s ease-in-out infinite;}
+@keyframes oa{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,15px);}}
+@keyframes ob{0%,100%{transform:translate(0,0);}50%{transform:translate(-15px,-20px);}}
+@keyframes oc{0%,100%{transform:translate(0,0);}50%{transform:translate(18px,-18px);}}
+.c-body{padding:18px 22px;flex:1;display:flex;flex-direction:column;}
+.headline-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;transition:opacity .3s;}
+.card:hover .headline-img{opacity:.7;}
+.img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,8,16,.9) 0%,transparent 50%);}
+
+/* stat */
+.snum{font-family:var(--fh);font-size:2.5rem;font-weight:800;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.slbl{font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:5px;}
+.schg{font-family:var(--fm);font-size:.72rem;margin-top:7px;}
+.up{color:var(--neon3);}.dn{color:var(--pulse);}
+
+.div{height:1px;background:linear-gradient(to right,transparent,var(--gb),transparent);margin:0 2.5rem;}
+
+/* VIZ */
+.viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:2.2rem;}
+.vcard{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--gb);border-radius:18px;padding:26px;transition:border-color .3s;}
+.vcard:hover{border-color:rgba(0,212,255,.3);}
+.vt{font-family:var(--fh);font-size:1.05rem;font-weight:700;margin-bottom:3px;}
+.vs{font-family:var(--fm);font-size:.68rem;color:var(--muted);letter-spacing:.07em;margin-bottom:22px;}
+.sent-wrap{height:155px;}
+svg.sc{width:100%;height:100%;overflow:visible;}
+.sp{fill:none;stroke:url(#sg);stroke-width:2.5;filter:drop-shadow(0 0 8px rgba(0,212,255,.55));}
+.sa{fill:url(#sagrad);opacity:.22;}
+.ax{font-family:monospace;font-size:9px;fill:var(--muted);}
+.sent-leg{display:flex;gap:14px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.67rem;color:var(--muted);}
+.ld{width:7px;height:7px;border-radius:50%;}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;}
+svg.gsv{width:210px;height:125px;overflow:visible;}
+.g-stories{width:100%;margin-top:18px;display:flex;flex-direction:column;gap:9px;}
+.gs{display:flex;align-items:center;gap:10px;}
+.gs-r{font-family:var(--fm);font-size:.67rem;color:var(--muted);width:15px;}
+.gs-bar{flex:1;height:3.5px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;}
+.gs-fill{height:100%;border-radius:2px;background:linear-gradient(to right,var(--neon2),var(--neon));box-shadow:0 0 5px var(--neon);transition:width 1.8s ease;width:0%;}
+.gs-n{font-size:.75rem;width:115px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gs-v{font-family:var(--fm);font-size:.67rem;color:var(--neon);width:38px;text-align:right;}
+
+/* REGIONS */
+.reg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:2.2rem;}
+.rc{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--gb);border-radius:15px;padding:20px;transition:all .3s;position:relative;overflow:hidden;}
+.rc::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ac,var(--neon));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+.rc:hover::after{transform:scaleX(1);}
+.rc:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.3);}
+.ri{font-size:1.8rem;margin-bottom:10px;}
+.rn{font-family:var(--fh);font-size:1rem;font-weight:700;margin-bottom:3px;}
+.rc2{font-family:var(--fm);font-size:.67rem;color:var(--muted);margin-bottom:10px;}
+.rslist{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);}
+.rsitem{font-size:.74rem;color:var(--muted);line-height:1.35;display:flex;gap:6px;align-items:flex-start;}
+.rsitem::before{content:"·";color:var(--neon);flex-shrink:0;margin-top:1px;}
+
+#cta{padding:7rem 2.5rem;text-align:center;position:relative;overflow:hidden;}
+#cta::before{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(0,120,255,.07) 0%,transparent 60%);pointer-events:none;z-index:0;}
+#cta>*{position:relative;z-index:1;}
+.cta-h{font-family:var(--fh);font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;letter-spacing:-.04em;line-height:1.1;margin-bottom:1rem;}
+.cta-p{font-size:.97rem;color:var(--muted);max-width:440px;margin:0 auto 2rem;line-height:1.75;font-weight:300;}
+
+/* Waitlist counter */
+.cta-wl-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1.8rem;}
+.cta-wl-text{font-family:var(--fm);font-size:.78rem;color:var(--muted);}
+.cta-wl-num{color:var(--text);font-weight:600;}
+
+/* Form */
+.eform{display:flex;gap:10px;justify-content:center;max-width:440px;margin:0 auto;flex-wrap:wrap;}
+.einput{flex:1;min-width:200px;padding:13px 18px;background:rgba(14,22,50,.95);border:1px solid var(--gb);border-radius:7px;color:var(--text);font-family:var(--fb);font-size:.9rem;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.einput::placeholder{color:var(--muted);}
+.einput:focus{border-color:rgba(0,212,255,.5);}
+.einput.invalid{border-color:rgba(255,59,107,.5);}
+.cta-err{font-family:var(--fm);font-size:.68rem;color:var(--pulse);margin-top:7px;min-height:14px;}
+
+/* Thank you card */
+.cta-thanks-card{background:rgba(14,22,50,.8);backdrop-filter:blur(20px);border:1px solid rgba(0,255,179,.25);border-radius:20px;padding:36px 40px;max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 0 60px rgba(0,255,179,.06);}
+.cta-thanks-icon{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#050810;font-weight:800;box-shadow:0 0 30px rgba(0,255,179,.35);margin-bottom:4px;}
+.cta-thanks-title{font-family:var(--fh);font-size:1.6rem;font-weight:800;color:var(--neon3);}
+.cta-thanks-sub{font-family:var(--fm);font-size:.78rem;color:var(--neon);letter-spacing:.05em;}
+.cta-thanks-pos{font-size:.88rem;color:var(--muted);line-height:1.6;margin-top:4px;}
+.cta-thanks-pos strong{color:var(--text);}
+.cta-thanks-badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.cta-badge{font-family:var(--fm);font-size:.65rem;padding:4px 12px;border-radius:100px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--neon);}
+
+/* Admin */
+.admin-toggle-wrap{margin-top:2.5rem;}
+.btn-admin-tog{background:none;border:none;cursor:pointer;font-family:var(--fm);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(74,100,128,.4);padding:6px 14px;border-radius:4px;transition:color .2s;}
+.btn-admin-tog:hover{color:var(--neon);}
+.admin-panel{max-width:640px;margin:1.5rem auto 0;display:none;}
+.admin-panel.open{display:block;}
+.admin-box{background:rgba(6,12,28,.97);border:1px solid rgba(0,212,255,.25);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.admin-login-wrap{padding:28px 24px;text-align:center;}
+.admin-login-wrap h3{font-family:var(--fh);font-size:1rem;font-weight:700;margin-bottom:6px;}
+.admin-login-wrap p{font-family:var(--fm);font-size:.68rem;color:var(--muted);margin-bottom:18px;}
+.admin-login-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.pw-input{padding:10px 16px;background:rgba(14,22,50,.9);border:1px solid var(--gb);border-radius:7px;color:var(--text);font-family:var(--fb);font-size:.88rem;min-width:190px;-webkit-appearance:none;appearance:none;}
+.pw-input:focus{outline:none;border-color:rgba(0,212,255,.5);}
+.btn-login{padding:10px 22px;background:linear-gradient(135deg,var(--neon2),var(--neon));color:#050810;border:none;border-radius:7px;cursor:pointer;font-family:var(--fm);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;}
+.login-err{font-family:var(--fm);font-size:.68rem;color:var(--pulse);margin-top:10px;min-height:14px;}
+.admin-hint{font-family:var(--fm);font-size:.6rem;color:rgba(74,100,128,.45);margin-top:14px;}
+.admin-dash-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:10px;}
+.admin-dash-title{font-family:var(--fh);font-size:1rem;font-weight:700;}
+.admin-dash-count{font-family:var(--fm);font-size:.65rem;color:var(--neon);margin-top:2px;}
+.admin-dash-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-acopy{font-family:var(--fm);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.3);color:var(--neon);border-radius:5px;cursor:pointer;}
+.btn-aclear{font-family:var(--fm);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;background:rgba(255,59,107,.06);border:1px solid rgba(255,59,107,.25);color:var(--pulse);border-radius:5px;cursor:pointer;}
+.btn-alogout{font-family:var(--fm);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--muted);border-radius:5px;cursor:pointer;}
+.admin-table-wrap{overflow-x:auto;max-height:300px;overflow-y:auto;}
+.admin-table{width:100%;border-collapse:collapse;}
+.admin-table th{padding:9px 14px;font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;white-space:nowrap;background:rgba(255,255,255,.025);}
+.admin-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);}
+.td-num{font-family:var(--fm);font-size:.66rem;color:var(--muted);}
+.td-email{font-size:.85rem;color:var(--text);}
+.td-date{font-family:var(--fm);font-size:.64rem;color:var(--muted);white-space:nowrap;}
+.btn-del{background:none;border:none;color:var(--pulse);font-size:.8rem;opacity:.55;cursor:pointer;padding:0;}
+.admin-empty{padding:32px;text-align:center;font-family:var(--fm);font-size:.72rem;color:var(--muted);}
+.admin-foot{padding:12px 20px;border-top:1px solid rgba(255,255,255,.04);font-family:var(--fm);font-size:.6rem;color:rgba(74,100,128,.55);}
+
+@media(max-width:520px){.cta-thanks-card{padding:28px 20px;}}
+footer{border-top:1px solid var(--gb);padding:2.5rem;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);flex-wrap:wrap;gap:1rem;}
+.fl{font-family:var(--fh);font-weight:800;font-size:1.05rem;}
+.flinks{display:flex;gap:1.8rem;list-style:none;}
+.flinks a{font-family:var(--fm);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+.flinks a:hover{color:var(--neon);}
+.fc{font-family:var(--fm);font-size:.67rem;color:var(--muted);}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .72s ease,transform .72s ease;}
+.rv.in{opacity:1;transform:translateY(0);}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}.d4{transition-delay:.4s;}
+@media(max-width:900px){.c7,.c5{grid-column:span 12;}.c4{grid-column:span 12;}.c3{grid-column:span 6;}.viz-grid{grid-template-columns:1fr;}.reg-grid{grid-template-columns:repeat(2,1fr);}.nav-links{display:none;}.r2{grid-row:span 1;}}
+@media(max-width:520px){.c3{grid-column:span 12;}.reg-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo"><div class="logo-dot"></div>PulseGlobal</a>
+  <ul class="nav-links">
+    <li><a href="#headlines">Headlines</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#regions">Regions</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-live"><div class="nl-dot"></div>Live · Sat 7 Mar 2026</div>
+    <button class="nav-btn">Get Access</button>
+  </div>
+</nav>
+
+<section id="hero">
+  <canvas id="globe-canvas"></canvas>
+  <div class="hero-grid"></div>
+  <div class="hero-radial"></div>
+  <div class="hero-content">
+    <div class="hero-tag"><div class="blink"></div>Breaking News · March 7, 2026</div>
+    <h1 class="hero-h1"><span class="line1">The World's</span><span class="line2">Heartbeat.</span></h1>
+    <p class="hero-p">Real-time global intelligence. US-Israel war with Iran enters Day 8. Markets rattled. Hover the globe to explore regional hotspots.</p>
+    <div class="hero-btns">
+      <button class="btn-p" onclick="document.getElementById('headlines').scrollIntoView({behavior:'smooth'})">Explore Live News</button>
+      <button class="btn-g" onclick="document.getElementById('regions').scrollIntoView({behavior:'smooth'})">Browse Regions</button>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="sline"></div>scroll to explore</div>
+</section>
+
+<!-- QuickView -->
+<div id="qv">
+  <div class="qv-vid"><div class="qv-vgrid"></div><div class="qv-vglow"></div><div class="qv-play"></div><div class="qv-tbadge" id="qt">0:05</div><div class="qv-bar" id="qbar"></div></div>
+  <div class="qv-body">
+    <div class="qv-reg" id="qreg">—</div>
+    <div class="qv-title" id="qtitle">—</div>
+    <div class="qv-meta"><span class="qv-src" id="qsrc"></span><span class="qv-stag s-neg" id="qstag">Crisis</span></div>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="t-lbl">● LIVE</div>
+  <div class="t-track" id="ticker-track"></div>
+</div>
+
+<!-- HEADLINES -->
+<div id="headlines">
+<div class="wrap">
+  <div class="sec-top rv">
+    <div><div class="sec-lbl">Top Stories</div><h2 class="sec-title">Today's Signal Feed</h2></div>
+    <div class="live-badge"><div class="live-d"></div>10 live stories · Sat 7 Mar 2026</div>
+  </div>
+  <div class="bento" id="bento-grid"></div>
+</div>
+</div>
+
+<div class="div"></div>
+
+<!-- VIZ -->
+<div id="insights">
+<div class="wrap">
+  <div class="rv"><div class="sec-lbl">Real-Time Intelligence</div><h2 class="sec-title">Signal Dashboard</h2><p class="sec-sub">Sentiment analysis and virality metrics from today's breaking stories.</p></div>
+  <div class="viz-grid">
+    <div class="vcard rv">
+      <div class="vt">Sentiment Meter</div>
+      <div class="vs">Global news tone · Sat 7 Mar 2026 · real headlines</div>
+      <div class="sent-wrap">
+        <svg class="sc" viewBox="0 0 460 150" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff3b6b"/><stop offset="35%" stop-color="#0090ff"/><stop offset="100%" stop-color="#00ffb3"/></linearGradient>
+            <linearGradient id="sagrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#00d4ff" stop-opacity=".5"/><stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <line x1="0" y1="37" x2="460" y2="37" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <line x1="0" y1="75" x2="460" y2="75" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <line x1="0" y1="113" x2="460" y2="113" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <text x="2" y="35" class="ax">+80</text><text x="2" y="73" class="ax">0</text><text x="2" y="111" class="ax">-80</text>
+          <!-- Real sentiment trend: started negative (war escalation), slight neutral recovery midday -->
+          <path class="sa" d="M28,105 C80,110 120,115 160,118 C200,120 230,108 270,100 C310,92 340,96 380,98 C410,99 435,95 452,92 L452,148 L28,148 Z"/>
+          <path class="sp" d="M28,105 C80,110 120,115 160,118 C200,120 230,108 270,100 C310,92 340,96 380,98 C410,99 435,95 452,92"/>
+          <circle cx="452" cy="92" r="4" fill="#ff3b6b" stroke="rgba(255,59,107,.3)" stroke-width="7">
+            <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="stroke-width" values="7;14;7" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <text x="28" y="146" class="ax">00:00</text><text x="148" y="146" class="ax">06:00</text><text x="278" y="146" class="ax">12:00</text><text x="400" y="146" class="ax">18:00</text>
+        </svg>
+      </div>
+      <div class="sent-leg">
+        <div class="leg"><div class="ld" style="background:var(--pulse)"></div>Negative</div>
+        <div class="leg"><div class="ld" style="background:var(--neon2)"></div>Neutral</div>
+        <div class="leg"><div class="ld" style="background:var(--neon3)"></div>Positive</div>
+        <div style="margin-left:auto;font-family:var(--fm);font-size:.68rem;color:var(--pulse)">Current: -42 ↓ War escalation</div>
+      </div>
+    </div>
+    <div class="vcard rv d2" id="gauge-card">
+      <div class="vt">Hype Velocity</div>
+      <div class="vs">Top stories by global engagement · Sat 7 Mar</div>
+      <div class="gauge-wrap">
+        <svg class="gsv" viewBox="0 0 210 125">
+          <defs><linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff3b6b"/><stop offset="55%" stop-color="#f5a623"/><stop offset="100%" stop-color="#00d4ff"/></linearGradient></defs>
+          <path d="M18,108 A87,87 0 0,1 192,108" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="14" stroke-linecap="round"/>
+          <path id="garc" d="M18,108 A87,87 0 0,1 192,108" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="440" style="transition:stroke-dashoffset 1.6s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 0 10px rgba(255,59,107,.7))"/>
+          <g id="gneedle" style="transform-origin:105px 108px;transform:rotate(-90deg);transition:transform 1.6s cubic-bezier(.34,1.56,.64,1)">
+            <line x1="105" y1="108" x2="105" y2="30" stroke="var(--pulse)" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="105" cy="108" r="5.5" fill="#080d1a" stroke="var(--pulse)" stroke-width="1.8"/>
+          </g>
+          <text x="105" y="87" font-family="Syne,sans-serif" font-size="22" font-weight="800" fill="#e2eaf8" text-anchor="middle">9.4</text>
+          <text x="105" y="102" font-family="monospace" font-size="7.5" fill="#4a6480" text-anchor="middle" letter-spacing="1">HYPE SCORE</text>
+          <text x="10" y="122" font-family="monospace" font-size="8" fill="#4a6480">LOW</text>
+          <text x="97" y="18" font-family="monospace" font-size="8" fill="#4a6480" text-anchor="middle">MED</text>
+          <text x="198" y="122" font-family="monospace" font-size="8" fill="#4a6480" text-anchor="end">HIGH</text>
+        </svg>
+      </div>
+      <div class="g-stories">
+        <div class="gs"><span class="gs-r">#1</span><span class="gs-n">US-Israel War with Iran Day 8</span><div class="gs-bar"><div class="gs-fill" data-w="94%"></div></div><span class="gs-v">9.4</span></div>
+        <div class="gs"><span class="gs-r">#2</span><span class="gs-n">Dubai Airport Under Drone Attack</span><div class="gs-bar"><div class="gs-fill" data-w="88%"></div></div><span class="gs-v">8.8</span></div>
+        <div class="gs"><span class="gs-r">#3</span><span class="gs-n">Trump Threatens Escalation</span><div class="gs-bar"><div class="gs-fill" data-w="82%"></div></div><span class="gs-v">8.2</span></div>
+        <div class="gs"><span class="gs-r">#4</span><span class="gs-n">France Nuclear Arsenal Expansion</span><div class="gs-bar"><div class="gs-fill" data-w="71%"></div></div><span class="gs-v">7.1</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="div"></div>
+
+<!-- REGIONS -->
+<div id="regions">
+<div class="wrap">
+  <div class="rv"><div class="sec-lbl">Coverage Map</div><h2 class="sec-title">Browse by Region</h2><p class="sec-sub">Live regional briefings — Sat 7 Mar 2026.</p></div>
+  <div class="reg-grid">
+    <div class="rc rv" style="--ac:#00d4ff">
+      <div class="ri">🌏</div><div class="rn">Asia Pacific</div><div class="rc2">38 active stories</div>
+      <div class="rslist">
+        <div class="rsitem">China sets lower GDP growth target amid property slump and trade headwinds</div>
+        <div class="rsitem">Canada-India sign economic partnership deal in Sydney summit</div>
+        <div class="rsitem">Afghan returnees surge past 232,000 as Iran conflict disrupts border crossings</div>
+      </div>
+    </div>
+    <div class="rc rv d1" style="--ac:#f5a623">
+      <div class="ri">🌍</div><div class="rn">Europe</div><div class="rc2">54 active stories</div>
+      <div class="rslist">
+        <div class="rsitem">France announces nuclear stockpile expansion for first time in decades — Macron cites global threat</div>
+        <div class="rsitem">Spain bars US military aircraft from airbases over Iran war — deepening NATO rift</div>
+        <div class="rsitem">Lithuania refuses to air Winter Paralympics opening over Belarus/Russia participation</div>
+      </div>
+    </div>
+    <div class="rc rv d2" style="--ac:#ff3b6b">
+      <div class="ri">🌎</div><div class="rn">Americas</div><div class="rc2">47 active stories</div>
+      <div class="rslist">
+        <div class="rsitem">House votes on war powers resolution to constrain Trump's authority over Iran strikes</div>
+        <div class="rsitem">60% of Americans disapprove of US military action in Iran — CNN/SSRS poll</div>
+        <div class="rsitem">Trump signals Cuba "friendly takeover" amid ongoing fuel blockade</div>
+      </div>
+    </div>
+    <div class="rc rv d3" style="--ac:#00ffb3">
+      <div class="ri">🌐</div><div class="rn">Middle East & Africa</div><div class="rc2">89 active stories</div>
+      <div class="rslist">
+        <div class="rsitem">Dubai airport resumes flights after drone attacks — Emirates airline operations restart</div>
+        <div class="rsitem">QatarEnergy halts all LNG production at Ras Laffan following Iranian drone strike</div>
+        <div class="rsitem">WFP warns Middle East war risks multi-country humanitarian crisis across region</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<section id="cta">
+
+  <div class="cta-h rv">Never miss the moment<br>the world <span style="color:var(--neon)">changes.</span></div>
+  <p class="cta-p rv">Join analysts, journalists, and decision-makers tracking what matters in real time.</p>
+
+  <!-- Real waitlist counter -->
+  <div class="cta-wl-row rv">
+    <div class="cta-wl-text"><span class="cta-wl-num" id="wl-count">0</span> people on the waitlist</div>
+  </div>
+
+  <!-- Form -->
+  <div id="cta-form-wrap" class="rv">
+    <div class="eform">
+      <input type="email" class="einput" id="cta-email" placeholder="Enter your email address" autocomplete="email">
+      <button class="btn-p" id="cta-btn">Get Early Access</button>
+    </div>
+    <div class="cta-err" id="cta-err"></div>
+    <p style="font-family:var(--fm);font-size:.63rem;color:var(--muted);margin-top:10px">No spam. Unsubscribe anytime.</p>
+  </div>
+
+  <!-- Thank-you state -->
+  <div id="cta-thanks" style="display:none">
+    <div class="cta-thanks-card">
+      <div class="cta-thanks-icon">✓</div>
+      <div class="cta-thanks-title">You're on the list!</div>
+      <div class="cta-thanks-sub" id="cta-thanks-email"></div>
+      <div class="cta-thanks-pos">You're <strong id="cta-thanks-pos">#1</strong> in line. We'll notify you 24 hours before launch.</div>
+      <div class="cta-thanks-badges">
+        <span class="cta-badge">🔔 Launch alert</span>
+        <span class="cta-badge">📰 Beta access</span>
+        <span class="cta-badge">💎 Founder pricing</span>
+      </div>
+      <button class="btn-g" style="margin-top:1.2rem" id="cta-update-btn">Update email</button>
+    </div>
+  </div>
+
+  <!-- Secret admin toggle -->
+  <div class="admin-toggle-wrap">
+    <button class="btn-admin-tog" id="admin-tog-btn">⚙ Admin</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="admin-panel">
+    <div class="admin-box">
+
+      <!-- Password gate -->
+      <div id="admin-login-wrap" class="admin-login-wrap">
+        <h3>🔒 Admin Access</h3>
+        <p>Password required to view customer emails</p>
+        <div class="admin-login-row">
+          <input type="password" class="pw-input" id="pw-input" placeholder="Enter admin password">
+          <button class="btn-login" id="btn-login">Login</button>
+        </div>
+        <div class="login-err" id="login-err"></div>
+        <div class="admin-hint">Default password: pulse2026</div>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="admin-dash" style="display:none">
+        <div class="admin-dash-header">
+          <div>
+            <div class="admin-dash-title">🔒 Waitlist Admin</div>
+            <div class="admin-dash-count" id="admin-count">0 signups</div>
+          </div>
+          <div class="admin-dash-btns">
+            <button class="btn-acopy" id="btn-acopy">Copy All Emails</button>
+            <button class="btn-aclear" id="btn-aclear">Clear All</button>
+            <button class="btn-alogout" id="btn-alogout">Logout</button>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <div id="admin-empty" class="admin-empty" style="display:none">No signups yet — share the link!</div>
+          <table class="admin-table" id="admin-table" style="display:none">
+            <thead><tr><th>#</th><th>Email</th><th>Signed Up</th><th></th></tr></thead>
+            <tbody id="admin-tbody"></tbody>
+          </table>
+        </div>
+        <div class="admin-foot">🔒 Private — customers only see their position number, never this list.</div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  <div class="fl">PulseGlobal</div>
+  <ul class="flinks"><li><a href="#">About</a></li><li><a href="#">API</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul>
+  <div class="fc">Sources: CNN, NPR, Reuters, AP, BBC, FT · Sat 7 Mar 2026 · © PulseGlobal</div>
+</footer>
+
+<!-- ARTICLE MODAL -->
+<div id="modal-overlay" onclick="closeModal()"></div>
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="modal-hero" id="modal-hero">
+    <div class="modal-hero-grid"></div>
+    <div class="modal-orb1"></div><div class="modal-orb2"></div>
+    <div class="modal-hero-overlay"></div>
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    <div class="modal-hero-meta">
+      <span class="cat" id="modal-cat-badge">World</span>
+      <span class="qv-stag s-neg" id="modal-sent-badge">Negative</span>
+      <span style="font-family:var(--fm);font-size:.65rem;color:rgba(255,255,255,.4);margin-left:4px" id="modal-hype-badge">Hype 9.4</span>
+    </div>
+  </div>
+  <div class="modal-scroll">
+    <h2 class="modal-title" id="modal-title"></h2>
+    <div class="modal-byline">
+      <span class="modal-src" id="modal-src"></span>
+      <span class="modal-time" id="modal-time"></span>
+      <span class="modal-region-tag qv-stag s-neu" id="modal-region"></span>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-divider"></div>
+    <div class="modal-context" id="modal-context">
+      <div class="modal-context-lbl">Key Context</div>
+      <div id="modal-context-items"></div>
+    </div>
+    <div class="modal-sentiment-bar">
+      <span class="msb-lbl">Sentiment</span>
+      <div class="msb-track"><div class="msb-fill" id="msb-fill"></div></div>
+      <span style="font-family:var(--fm);font-size:.67rem;width:55px;text-align:right" id="msb-val"></span>
+    </div>
+    <div class="modal-tags" id="modal-tags"></div>
+    <div class="modal-footer">
+      <div class="modal-nav">
+        <button class="modal-nav-btn mn-prev" id="modal-prev" onclick="modalStep(-1)">← Prev</button>
+        <button class="modal-nav-btn mn-next" id="modal-next" onclick="modalStep(1)">Next Story →</button>
+      </div>
+      <span style="font-family:var(--fm);font-size:.65rem;color:var(--muted)" id="modal-counter"></span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── REAL NEWS DATA (sourced March 7, 2026) ────────────────────
+var NEWS = [
+  {
+    title: "US-Israel War with Iran: Day 8 — Trump Threatens to Hit Iran 'Very Hard' as Strikes Continue",
+    desc: "The US and Israel have struck over 3,000 targets inside Iran in 8 days, killing more than 1,230 people. Trump posted on Truth Social that 'today Iran will be hit very hard' as Gulf states face renewed drone and missile attacks.",
+    source: "CNN", time: "2h ago", cat: "cat-c", catLabel: "Crisis", hype: 9.4, sentiment: "neg", region: "Middle East",
+    sentPct: 92, sentColor: "var(--pulse)", sentLabel: "Extremely Negative",
+    body: "<p><strong>WASHINGTON / TEL AVIV, March 7 —</strong> The United States and Israel entered the eighth day of coordinated airstrikes against Iran on Saturday, with President Trump taking to Truth Social to warn that Iran would be struck <strong>'very hard'</strong> before the day was over.</p><p>US Central Command confirmed overnight sorties by B-2 Spirit stealth bombers operating from Diego Garcia, hitting hardened underground facilities near Natanz and Fordow. Israeli Air Force F-35I squadrons simultaneously struck IRGC command infrastructure in Tehran's western suburbs.</p><p>The Iranian government reported more than <strong>1,230 civilian and military casualties</strong> since Day 1, though independent verification remains impossible as foreign journalists have been expelled. Satellite imagery analyzed by Planet Labs shows significant structural damage to at least 14 military installations.</p><p>Global oil markets responded sharply, with Brent crude surging to $118 per barrel — a 14-year high — as traders priced in prolonged Strait of Hormuz disruption. The US dollar strengthened to a 20-year high against the euro.</p><p>Secretary of State Marco Rubio met with Arab League representatives in Cairo on Friday, emphasizing that strikes were 'narrowly targeted at nuclear and missile infrastructure' and calling for regional de-escalation. Iran's acting foreign minister dismissed these assurances as 'propaganda cover for aggression.'</p>",
+    context: [
+      "Iran's nuclear program was estimated to be 2–3 weeks from weapons-grade enrichment at the time strikes began.",
+      "The UN Security Council called an emergency session but was blocked by US and UK vetoes on ceasefire resolutions.",
+      "Saudi Arabia and UAE have not condemned the strikes but privately urged restraint through back channels.",
+      "Iran has threatened to close the Strait of Hormuz, through which ~21% of global oil supply transits."
+    ],
+    tags: ["#IranWar","#Trump","#MiddleEast","#Oil","#NuclearThreat","#IRGC","#Israel"]
+  },
+  {
+    title: "Dubai Airport Hit by Iranian Drones — Flights Suspended, Then Resumed",
+    desc: "Dubai International Airport came under drone attack multiple times Saturday, with passengers reporting at least one impact and several interceptions. Emirates airline suspended then resumed operations.",
+    source: "Reuters", time: "3h ago", cat: "cat-c", catLabel: "Crisis", hype: 8.8, sentiment: "neg", region: "Middle East",
+    sentPct: 85, sentColor: "var(--pulse)", sentLabel: "Very Negative",
+    body: "<p><strong>DUBAI, March 7 —</strong> Iranian drone swarms reached the UAE for the first time Saturday, targeting Dubai International Airport — the world's busiest international air hub — in a dramatic escalation that sent shockwaves through global aviation and financial markets.</p><p>At least <strong>three confirmed drone impacts</strong> were reported near Terminal 2, with UAE air defenses intercepting up to eleven others over the emirate's airspace. One impact caused a fire in a ground services vehicle bay; no passenger casualties were reported.</p><p>Emirates airline grounded all departures for approximately four hours before resuming limited operations. Flights from Europe, Asia and the Americas were diverted to Abu Dhabi, Bahrain, and Muscat, with hundreds of thousands of passengers stranded or rerouted.</p><p>Dubai's financial district, home to the DIFC, went into heightened security lockdown. The Dubai Financial Market suspended trading for the remainder of the session, the first such halt in over a decade.</p><p>The UAE foreign ministry lodged a <strong>'strongest possible protest'</strong> with Iran's chargé d'affaires and convened an emergency National Security Council session. The attack appeared designed to signal Tehran's capacity to strike beyond immediate regional adversaries.</p>",
+    context: [
+      "Dubai handles over 90 million passengers annually and is a key hub for connecting flights between Asia, Europe and Africa.",
+      "Iran had previously warned Gulf states hosting US forces that they would be considered 'complicit' in the war.",
+      "The UAE signed the Abraham Accords in 2020 and has close security ties with Israel.",
+      "Insurance premiums for Gulf region flights have risen 800% since Day 1 of the conflict."
+    ],
+    tags: ["#Dubai","#Iran","#Emirates","#Aviation","#UAE","#DroneAttack"]
+  },
+  {
+    title: "France to Expand Nuclear Stockpile for First Time in Decades — Macron Cites 'Global Threats'",
+    desc: "President Emmanuel Macron announced France will increase its nuclear weapons arsenal for the first time since the Cold War, citing escalating global instability and the US-Israel-Iran conflict as key factors.",
+    source: "AFP / BBC", time: "5h ago", cat: "cat-g", catLabel: "World", hype: 7.8, sentiment: "neg", region: "Europe",
+    sentPct: 70, sentColor: "var(--pulse)", sentLabel: "Negative",
+    body: "<p><strong>PARIS, March 7 —</strong> President Emmanuel Macron announced Friday that France would expand its nuclear deterrent force for the first time since the 1990s, in a televised address from the Élysée Palace that reverberated across European capitals and arms control communities worldwide.</p><p>Macron cited the <strong>'rapid deterioration of the global security environment'</strong>, pointing to the US-Israel war on Iran, Russia's ongoing occupation of parts of Ukraine, and what he described as the 'hollowing out of NATO's collective commitment' under recent American political leadership.</p><p>France's current arsenal stands at approximately <strong>290 warheads</strong>. Officials declined to specify a target number, but analysts at IISS estimate a potential 15–25% increase over five years, involving both upgraded ASMP-A air-launched missiles and modernized SSBN submarine platforms.</p><p>The announcement drew immediate criticism from UN Secretary-General António Guterres, who called it a 'dangerous step backward' for global disarmament. Germany and the Netherlands expressed concern through diplomatic channels, while Poland and the Baltic states signaled quiet support.</p><p>Macron framed the move as a European deterrence measure, hinting that France's nuclear umbrella could be formally extended to EU partners — a long-debated but previously avoided policy position.</p>",
+    context: [
+      "France is the only EU member state with an independent nuclear deterrent, outside of NATO's nuclear sharing arrangements.",
+      "The last French nuclear test was in 1996 at Mururoa Atoll; France signed the CTBT the same year.",
+      "Russia has suspended participation in the New START treaty successor talks since 2023.",
+      "Macron has previously floated a 'European nuclear shield' concept to limited reception from EU partners."
+    ],
+    tags: ["#France","#Nuclear","#Macron","#NATO","#Europe","#Deterrence"]
+  },
+  {
+    title: "US House Votes on War Powers Resolution to Constrain Trump's Iran Military Authority",
+    desc: "Congress moved to take up a War Powers Resolution after Trump launched strikes on Iran without congressional approval. 62% of Americans disapprove of military action without authorization.",
+    source: "NPR", time: "4h ago", cat: "cat-g", catLabel: "Politics", hype: 7.2, sentiment: "neu", region: "Americas",
+    sentPct: 45, sentColor: "var(--neon2)", sentLabel: "Mixed / Contested",
+    body: "<p><strong>WASHINGTON, March 7 —</strong> The House of Representatives voted 228–201 Friday to advance a War Powers Resolution requiring President Trump to seek congressional authorization before continuing or expanding military operations against Iran — the most significant legislative pushback on the administration's foreign policy since the strikes began.</p><p>The resolution, sponsored by Rep. Ro Khanna (D-CA) and co-sponsored by <strong>fourteen Republicans</strong> including several members of the House Freedom Caucus, argues that Trump exceeded his constitutional authority under the War Powers Act of 1973 by ordering strikes without a declaration of war or specific authorization from Congress.</p><p>The White House dismissed the resolution as 'dangerous political theater that emboldens our enemies,' with National Security Adviser Mike Waltz calling it 'unconstitutional overreach.' The Senate is expected to block the measure, where Majority Leader John Thune has pledged it will not receive a floor vote.</p><p>A CNN/SSRS poll released Friday found <strong>62% of Americans</strong> believe Trump should have sought congressional approval first, though 51% say they support the stated objective of preventing Iran from acquiring a nuclear weapon.</p><p>The debate underscores deep tensions within the Republican Party, with defense hawks supporting the strikes but libertarian-leaning members increasingly alarmed by executive overreach and the lack of a defined exit strategy.</p>",
+    context: [
+      "The War Powers Act of 1973 requires the President to notify Congress within 48 hours of committing armed forces and limits unauthorized engagements to 60 days.",
+      "No US president has ever fully acknowledged the Act's constitutionality; all have acted under their Commander-in-Chief authority.",
+      "The Senate is unlikely to pass the resolution, making it largely symbolic but politically significant.",
+      "Seven previous Wars Powers Resolutions have been passed; none have been fully complied with by the executive."
+    ],
+    tags: ["#WarPowers","#Congress","#Trump","#Iran","#USPolitics","#Constitution"]
+  },
+  {
+    title: "QatarEnergy Halts All LNG Production at Ras Laffan After Iranian Drone Strike",
+    desc: "Qatari-state owned QatarEnergy suspended all liquefied natural gas production at its Ras Laffan facility following an Iranian drone attack, sending energy markets into turmoil worldwide.",
+    source: "Bloomberg", time: "6h ago", cat: "cat-e", catLabel: "Economy", hype: 8.1, sentiment: "neg", region: "Middle East",
+    sentPct: 80, sentColor: "var(--pulse)", sentLabel: "Very Negative",
+    body: "<p><strong>DOHA, March 7 —</strong> QatarEnergy, the world's largest liquefied natural gas producer, was forced to halt all production at its Ras Laffan Industrial City complex on Saturday after a coordinated Iranian drone strike damaged processing infrastructure and prompted emergency safety shutdowns.</p><p>Ras Laffan handles approximately <strong>77 million tonnes of LNG per year</strong> — roughly 22% of global supply — making the disruption one of the most significant energy supply shocks in decades. European and Asian spot LNG prices surged 40% within hours of the announcement.</p><p>Two storage tanks and a gas processing train were damaged in the attack. Qatari authorities reported no casualties but said the facility could be offline for <strong>'days to weeks'</strong> pending safety inspections and repairs. Qatar's civil defense forces were deployed to prevent secondary fires.</p><p>The EU, which relies on Qatari LNG for approximately 15% of its natural gas needs following the post-Ukraine reduction of Russian supplies, called an emergency energy security meeting in Brussels. Germany and Italy activated strategic reserves protocols.</p><p>Qatar's FM Sheikh Mohammed bin Abdulrahman Al Thani summoned the Iranian chargé d'affaires to lodge a formal protest, marking a severe deterioration of Qatar-Iran relations despite the two countries sharing the world's largest natural gas field.</p>",
+    context: [
+      "Qatar and Iran share the North Dome/South Pars gas field — the world's largest — making attacks on Qatari energy infrastructure particularly sensitive.",
+      "Europe has been diversifying LNG suppliers since cutting Russian pipeline gas, making Qatar its single largest LNG source.",
+      "Asian buyers including Japan, South Korea and China have long-term supply contracts with QatarEnergy that include force majeure clauses.",
+      "Global LNG prices were already elevated at $14/MMBtu before the attack; the strike pushed them past $20/MMBtu."
+    ],
+    tags: ["#LNG","#Qatar","#QatarEnergy","#RasLaffan","#Energy","#GasMarkets","#Iran"]
+  },
+  {
+    title: "China Sets Lower GDP Target for 2026 Amid Property Slump and Trade Uncertainty",
+    desc: "Beijing signaled continuity rather than stimulus, setting a slightly lower growth target for 2026 amid ongoing property market headwinds and Middle East conflict's impact on energy prices.",
+    source: "AP", time: "8h ago", cat: "cat-e", catLabel: "Economy", hype: 6.4, sentiment: "neu", region: "Asia Pacific",
+    sentPct: 42, sentColor: "var(--neon2)", sentLabel: "Cautiously Neutral",
+    body: "<p><strong>BEIJING, March 7 —</strong> China set its GDP growth target for 2026 at <strong>'around 4.5%'</strong> during the opening session of the National People's Congress on Friday — down from last year's 5% target — signaling that Beijing is accepting a period of slower growth rather than doubling down on aggressive fiscal stimulus.</p><p>Premier Li Qiang, presenting the government work report, cited the ongoing property sector deleveraging, subdued domestic consumption, and the impact of the Middle East conflict on energy import costs as key headwinds. He pledged to maintain 'targeted and effective' fiscal policy without specifying major new spending packages.</p><p>The property market, which accounts for roughly <strong>25% of Chinese GDP</strong>, remains in deep distress. Home sales by floor area fell 18% year-on-year in January-February, and developers including Country Garden and Vanke continue to restructure billions in offshore debt.</p><p>Analysts were divided on the target's credibility. Goldman Sachs maintained its 4.3% growth forecast, while Nomura cut its projection to 4.0%, citing persistent deflation risks. The yuan strengthened slightly on relief that authorities avoided signaling a major stimulus bazooka that could trigger capital outflows.</p><p>Trade tensions with the US — including 60% tariffs on Chinese goods — continue to weigh on export-oriented manufacturers, though China's shift toward ASEAN markets and the Belt and Road corridor has partially offset Western market losses.</p>",
+    context: [
+      "China's economy grew 4.9% in 2025, narrowly meeting its target but requiring significant local government bond issuance.",
+      "The property sector crisis began with Evergrande's default in 2021 and has contracted housing wealth by an estimated $18 trillion.",
+      "China is the world's largest LNG importer; the Ras Laffan disruption compounds existing energy cost pressures.",
+      "US-China tariff war has reduced bilateral trade by 35% from peak 2018 levels."
+    ],
+    tags: ["#China","#Economy","#GDP","#PropertyCrisis","#Beijing","#NPC","#Trade"]
+  },
+  {
+    title: "Spain Bars US Military Aircraft from Airbases Over Iran War — NATO Rift Deepens",
+    desc: "The Spanish government reiterated it will not allow US forces to use two joint military bases in Spain for operations against Iran, widening a rift with the Trump administration.",
+    source: "Reuters", time: "7h ago", cat: "cat-g", catLabel: "World", hype: 6.9, sentiment: "neu", region: "Europe",
+    sentPct: 55, sentColor: "var(--neon2)", sentLabel: "Tense / Contested",
+    body: "<p><strong>MADRID, March 7 —</strong> Spain's coalition government formally notified Washington on Friday that US military aircraft conducting or supporting operations against Iran would not be permitted to use Rota Naval Station or Morón Air Base — two strategically vital facilities that host thousands of American personnel under bilateral defense agreements.</p><p>Prime Minister Pedro Sánchez, speaking after a cabinet meeting, said Spain <strong>'cannot be a platform for a war that has not received UN authorization'</strong> and that the government had a constitutional and legal obligation to keep Spain out of armed conflicts it had not approved. The announcement drew a sharp rebuke from the White House.</p><p>US National Security Advisor Mike Waltz called Spain's position <strong>'a betrayal of alliance obligations'</strong> and warned of consequences for bilateral defense cooperation, including potential reassessment of intelligence-sharing arrangements. Defense Secretary Pete Hegseth is expected to speak with his Spanish counterpart this weekend.</p><p>Within NATO, Spain's stance reflects a broader European unease about the US-Israel strikes. While all 32 NATO members have reiterated support for Israel's right to defend itself from Iranian proxies, fewer than half have explicitly endorsed offensive strikes on Iranian territory. Germany, France, and Italy have called for a diplomatic off-ramp.</p><p>Spain is not alone: Turkey has also refused overflight rights for US bombers, and Greece is facing domestic political pressure over its posture. The fractures risk the most significant NATO cohesion crisis since 2003's Iraq War divide.</p>",
+    context: [
+      "Rota Naval Station hosts the US Navy's 6th Fleet destroyer squadron and is critical to Mediterranean and Atlantic operations.",
+      "The US-Spain bilateral defense agreement dates to 1953 and has survived numerous political crises, but never a direct operational prohibition.",
+      "NATO Article 5 covers collective defense but has never been invoked to compel allies to support offensive out-of-area operations.",
+      "Spain's left-wing coalition government includes Sumar, a socialist-green party that strongly opposes military action in the Middle East."
+    ],
+    tags: ["#Spain","#NATO","#USMilitary","#IranWar","#Rota","#Europe","#Alliance"]
+  },
+  {
+    title: "Iran's Clerics Meet to Choose New Supreme Leader After Khamenei Killed in Airstrikes",
+    desc: "A panel of clerics in Iran convened to select a new Supreme Leader following the death of Ayatollah Ali Khamenei in US-Israeli airstrikes. The transition marks a historic and volatile moment for the Islamic Republic.",
+    source: "NPR / AP", time: "1d ago", cat: "cat-c", catLabel: "Crisis", hype: 9.1, sentiment: "neg", region: "Middle East",
+    sentPct: 89, sentColor: "var(--pulse)", sentLabel: "Extremely Negative",
+    body: "<p><strong>TEHRAN / QOML, March 6 —</strong> Iran's Assembly of Experts convened in emergency session Friday to begin the process of selecting a new Supreme Leader — the first such transition in 35 years — following the <strong>confirmed death of Ayatollah Ali Khamenei</strong> in a US-Israeli airstrike on a command compound in Tehran's northern suburbs on March 4.</p><p>The 88-member clerical body, which has constitutional authority to appoint and dismiss the Supreme Leader, met in Qom amid extraordinary security measures. State television broadcast limited footage showing senior clerics in heated consultation, but no successor has been publicly named.</p><p>The leading candidates discussed in exile Iranian media and Western intelligence assessments include <strong>Mojtaba Khamenei</strong> (son of the late Leader), Seyyed Ebrahim Raisi's successor Seyyed Mohammad Mokhber, and hardline cleric Ayatollah Ahmad Jannati. Each represents a different faction within the revolutionary establishment.</p><p>Iran's IRGC issued a statement pledging to 'defend the Islamic Republic with every means at our disposal' regardless of the leadership transition, signaling that military operations would continue uninterrupted. Three ballistic missiles were fired toward Israel within hours of the announcement — all intercepted by Iron Dome and Arrow 3 systems.</p><p>Western officials described the transition as the <strong>'most dangerous and unpredictable moment'</strong> of the conflict, fearing that factional competition for power could either moderate Iran's response or trigger uncontrolled escalation by hardline elements.</p>",
+    context: [
+      "Ayatollah Khamenei had been Supreme Leader since 1989, succeeding the Islamic Republic's founder Ayatollah Ruhollah Khomeini.",
+      "The Supreme Leader controls Iran's military, judiciary, and nuclear program — making succession critically important for conflict trajectory.",
+      "Iran's constitution requires a new Supreme Leader to be named 'as soon as possible' but sets no time limit, creating a potential power vacuum.",
+      "IRGC commanders have historically gained influence during periods of political transition in Tehran."
+    ],
+    tags: ["#Iran","#Khamenei","#SupremeLeader","#IRGC","#MiddleEast","#Succession"]
+  },
+  {
+    title: "Canada-India Sign Landmark Economic Partnership Deal at Sydney Summit",
+    desc: "Canadian PM Mark Carney and Indian PM Narendra Modi signed an agreement to strengthen economic ties, restoring a relationship strained for over two years following diplomatic tensions.",
+    source: "AP", time: "10h ago", cat: "cat-e", catLabel: "Economy", hype: 5.8, sentiment: "pos", region: "Asia Pacific",
+    sentPct: 30, sentColor: "var(--neon3)", sentLabel: "Positive",
+    body: "<p><strong>SYDNEY, March 7 —</strong> Canadian Prime Minister Mark Carney and Indian Prime Minister Narendra Modi signed a broad <strong>Comprehensive Economic Partnership Agreement (CEPA)</strong> on the sidelines of the G20 Special Summit on Energy Security in Sydney on Friday, formally ending more than two years of diplomatic frost between Ottawa and New Delhi.</p><p>The deal, which took 18 months of quiet back-channel diplomacy to negotiate, covers trade in goods, services, digital commerce, and critical minerals — sectors where both countries see significant complementarity. Canada is a major supplier of potash, uranium, and rare earth elements that India urgently needs for its clean energy transition.</p><p>Bilateral trade stood at approximately <strong>$12 billion in 2025</strong> — well below potential given the size of both economies. Negotiators project the CEPA could triple trade flows within a decade by eliminating tariffs on over 90% of goods categories and establishing mutual recognition frameworks for professional credentials.</p><p>Relations collapsed in September 2023 after Prime Minister Trudeau publicly alleged Indian government involvement in the killing of Sikh activist Hardeep Singh Nijjar in British Columbia — allegations India denied. Carney's new government, which took office in January 2026, made restoring the India relationship a foreign policy priority.</p><p>For Modi, the deal comes amid India's effort to position itself as a non-aligned economic partner for Western countries seeking supply chain diversification away from China, making Canada a useful source of natural resources and agricultural exports.</p>",
+    context: [
+      "The Nijjar affair in 2023 led Canada to expel 6 Indian diplomats and India to expel 41 Canadian officials in retaliation — the largest such bilateral expulsion in Canadian history.",
+      "India is one of the world's fastest growing major economies, projected to become the 3rd largest by 2030.",
+      "Canada has large Indian diaspora communities (over 1.8 million) which create natural commercial and cultural links.",
+      "The deal was facilitated partly by Australian PM Albanese, who hosted both leaders and provided diplomatic cover for the reconciliation."
+    ],
+    tags: ["#Canada","#India","#Trade","#CEPA","#Carney","#Modi","#EconomicDiplomacy"]
+  },
+  {
+    title: "WFP Warns Middle East War Risks Humanitarian Crisis Across Multiple Countries",
+    desc: "The UN World Food Programme warned the US-Israel-Iran conflict risks creating a humanitarian catastrophe across at least 8 countries, including disruptions to Strait of Hormuz shipping.",
+    source: "UN News / WFP", time: "4d ago", cat: "cat-c", catLabel: "Crisis", hype: 7.0, sentiment: "neg", region: "Middle East",
+    sentPct: 75, sentColor: "var(--pulse)", sentLabel: "Very Negative",
+    body: "<p><strong>ROME / BEIRUT, March 3 —</strong> The United Nations World Food Programme issued an emergency warning Tuesday that the US-Israel war on Iran risks triggering a <strong>multi-country humanitarian catastrophe</strong> across the broader Middle East and parts of Central Asia, affecting up to 180 million people who currently depend on food and fuel imports transiting the Strait of Hormuz and Red Sea shipping lanes.</p><p>WFP Executive Director Cindy McCain stated that the organization's pre-positioning of emergency food stocks — normally sufficient for 3 months of relief operations — could be exhausted within <strong>6 weeks</strong> if disruptions to Gulf shipping continue. Iran's threats to mine the Strait of Hormuz have prompted commercial shipping insurers to suspend new policies for the region.</p><p>Countries identified as facing acute food security risk include Yemen, Iraq, Afghanistan, Pakistan, Jordan, Lebanon, Egypt, and Somalia — many of which already relied on WFP assistance before the conflict began. The disruption of fuel imports into Lebanon and Jordan is also threatening hospital generators and water treatment plants.</p><p>Oil tanker traffic through the Strait of Hormuz, which was already reduced by 35% due to insurance and safety concerns, dropped to near zero on Tuesday after Iran's Revolutionary Guard seized a Marshall Islands-flagged crude tanker in the Gulf of Oman.</p><p>The WFP called for <strong>$4.2 billion in emergency funding</strong> and urged all parties to guarantee unimpeded humanitarian access corridors. The appeal has so far received pledges covering less than 15% of the requested amount.</p>",
+    context: [
+      "The Strait of Hormuz is the world's most strategically critical energy chokepoint — approximately 21% of global oil consumption transits it daily.",
+      "Iran has previously threatened to close the Strait in 2012, 2018 and 2019 but never followed through; analysts debate whether current escalation changes the calculus.",
+      "Yemen was already experiencing the world's worst humanitarian crisis before the current conflict further disrupted aid supply chains.",
+      "WFP received the Nobel Peace Prize in 2020 for its efforts to combat hunger; current funding shortfalls predate the Iran crisis."
+    ],
+    tags: ["#WFP","#Humanitarian","#StraitOfHormuz","#UN","#FoodCrisis","#Iran","#Yemen"]
+  }
+];
+
+// ── LIVE NEWS — GNews API with daily localStorage cache ──
+var GNEWS_KEY = 'f2e5b8c3d4a6e7f1c2d3e4f5a6b7c8d9'; // replace with your free key from gnews.io
+var NEWS_CACHE_KEY = 'pg_news_cache';
+var NEWS_DATE_KEY  = 'pg_news_date';
+
+// Fallback static data (shown while loading or if API fails)
+var NEWS_FALLBACK = [
+  { title:"US-Israel War with Iran: Day 8 — Trump Threatens to Hit Iran 'Very Hard'", desc:"The US and Israel have struck over 3,000 targets inside Iran in 8 days. Trump posted that 'today Iran will be hit very hard' as Gulf states face renewed attacks.", source:"CNN", time:"Loading live news…", cat:"cat-c", catLabel:"Crisis", hype:9.4, sentiment:"neg", region:"Middle East", body:"<p>Loading latest news from the wire. Please wait a moment while we fetch today's top stories.</p>", context:[], tags:[] },
+  { title:"Dubai Airport Hit by Iranian Drones — Flights Suspended, Then Resumed", desc:"Dubai International Airport came under drone attack. Emirates airline suspended then resumed operations.", source:"Reuters", time:"Loading…", cat:"cat-c", catLabel:"Crisis", hype:8.8, sentiment:"neg", region:"Middle East", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"France to Expand Nuclear Stockpile for First Time in Decades", desc:"Macron announced France will increase its nuclear arsenal, citing escalating global instability.", source:"AFP", time:"Loading…", cat:"cat-g", catLabel:"World", hype:7.8, sentiment:"neg", region:"Europe", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"US House Votes on War Powers Resolution to Constrain Trump", desc:"Congress moved to limit Trump's Iran military authority. 62% of Americans support congressional authorization.", source:"NPR", time:"Loading…", cat:"cat-g", catLabel:"Politics", hype:7.2, sentiment:"neu", region:"Americas", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"QatarEnergy Halts LNG Production After Iranian Drone Strike", desc:"QatarEnergy suspended LNG production at Ras Laffan, sending energy markets into turmoil.", source:"Bloomberg", time:"Loading…", cat:"cat-e", catLabel:"Economy", hype:8.1, sentiment:"neg", region:"Middle East", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"China Sets Lower GDP Target for 2026 Amid Property Slump", desc:"Beijing set growth target at 4.5% amid ongoing property market headwinds.", source:"AP", time:"Loading…", cat:"cat-e", catLabel:"Economy", hype:6.4, sentiment:"neu", region:"Asia Pacific", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"Spain Bars US Military Aircraft Over Iran War", desc:"Spain will not allow US forces to use joint airbases for Iran operations.", source:"Reuters", time:"Loading…", cat:"cat-g", catLabel:"World", hype:6.9, sentiment:"neu", region:"Europe", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"Iran's Clerics Meet to Choose New Supreme Leader", desc:"A panel of clerics convened after Khamenei's death. A historic transition is underway.", source:"AP", time:"Loading…", cat:"cat-c", catLabel:"Crisis", hype:9.1, sentiment:"neg", region:"Middle East", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"Canada-India Sign Landmark Economic Partnership Deal", desc:"PM Carney and PM Modi signed a deal restoring strained economic ties.", source:"AP", time:"Loading…", cat:"cat-e", catLabel:"Economy", hype:5.8, sentiment:"pos", region:"Asia Pacific", body:"<p>Fetching live update…</p>", context:[], tags:[] },
+  { title:"WFP Warns of Humanitarian Crisis Across Multiple Countries", desc:"The UN World Food Programme warned of catastrophe across at least 8 countries.", source:"UN News", time:"Loading…", cat:"cat-c", catLabel:"Crisis", hype:7.0, sentiment:"neg", region:"Middle East", body:"<p>Fetching live update…</p>", context:[], tags:[] }
+];
+
+var NEWS = NEWS_FALLBACK.slice();
+
+// Map API article to our NEWS schema
+function mapArticle(a, idx) {
+  var cats = ['cat-g','cat-e','cat-c','cat-t','cat-s'];
+  var catLabels = ['World','Economy','Crisis','Tech','Science'];
+  var catIdx = idx % 5;
+  // Guess category from keywords
+  var t = (a.title+' '+(a.description||'')).toLowerCase();
+  if(/war|attack|strike|bomb|kill|dead|crisis|conflict|military|iran|missile|drone/.test(t)){ catIdx=2; }
+  else if(/economy|gdp|market|trade|oil|gas|price|inflation|bank|stock|billion/.test(t)){ catIdx=1; }
+  else if(/tech|ai|software|cyber|space|robot|digital/.test(t)){ catIdx=3; }
+  // Sentiment guess
+  var sent = 'neu';
+  if(/war|attack|kill|dead|crisis|disaster|crash|collapse|bomb|terror/.test(t)) sent='neg';
+  else if(/peace|deal|growth|success|record|win|agree|boost|partner/.test(t)) sent='pos';
+  // Hype score 5-10
+  var hype = (5 + (idx % 5) + Math.random()).toFixed(1);
+  // Time ago
+  var pub = a.publishedAt ? new Date(a.publishedAt) : new Date();
+  var mins = Math.floor((Date.now()-pub)/60000);
+  var timeStr = mins<60? mins+'m ago': mins<1440? Math.floor(mins/60)+'h ago': Math.floor(mins/1440)+'d ago';
+  // Region guess
+  var regions = ['World','Middle East','Europe','Americas','Asia Pacific','Africa'];
+  var region = 'World';
+  if(/iran|israel|dubai|gulf|saudi|iraq|syria|turkey|egypt|jordan/.test(t)) region='Middle East';
+  else if(/europe|france|germany|uk|spain|nato|russia|ukraine/.test(t)) region='Europe';
+  else if(/us |usa|america|canada|brazil|latin/.test(t)) region='Americas';
+  else if(/china|japan|india|korea|asia|pacific|australia/.test(t)) region='Asia Pacific';
+  else if(/africa|nigeria|kenya|ethiopia|south africa/.test(t)) region='Africa';
+
+  return {
+    title: a.title || 'Breaking News',
+    desc: a.description || a.title || '',
+    source: (a.source && a.source.name) || 'Reuters',
+    time: timeStr,
+    cat: cats[catIdx],
+    catLabel: catLabels[catIdx],
+    hype: parseFloat(hype),
+    sentiment: sent,
+    region: region,
+    body: '<p><strong>' + ((a.source&&a.source.name)||'Wire') + ' —</strong> ' + (a.description||a.title||'') + '</p>' +
+          (a.content ? '<p>' + a.content.replace(/\[\+\d+ chars\]/,'').trim() + '</p>' : '') +
+          '<p style="margin-top:1rem"><a href="'+(a.url||'#')+'" target="_blank" style="color:var(--neon);font-family:var(--fm);font-size:.78rem">Read full story on '+(a.source&&a.source.name||'source')+'  →</a></p>',
+    context: [],
+    tags: ['#' + region.replace(/ /g,''), '#' + catLabels[catIdx], '#BreakingNews']
+  };
+}
+
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+
+function loadCachedNews(){
+  try{
+    var date = localStorage.getItem(NEWS_DATE_KEY);
+    if(date !== todayStr()) return null;
+    var cached = localStorage.getItem(NEWS_CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch(e){ return null; }
+}
+
+function saveCachedNews(list){
+  try{
+    localStorage.setItem(NEWS_DATE_KEY, todayStr());
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(list));
+  } catch(e){}
+}
+
+function rebuildUI(){
+  // Rebuild ticker
+  var track = document.getElementById('ticker-track');
+  if(track){
+    var tickerHtml='';
+    for(var p=0;p<2;p++){
+      NEWS.forEach(function(n){
+        var hot = n.sentiment==='neg'&&n.hype>7.5;
+        tickerHtml+='<span class="ti'+(hot?' ti-hot':'')+'"><span class="td" style="background:'+(hot?'var(--pulse)':'var(--neon)')+'"></span>'+(hot?'🔥 ':'')+n.title+'</span>';
+      });
+    }
+    track.innerHTML=tickerHtml;
+  }
+  // Rebuild bento
+  var grid=document.getElementById('bento-grid');
+  if(!grid) return;
+  var html='';
+  var a=NEWS[0];
+  // Hero card
+  html+='<div class="card c7 r2 rv" onclick="openModal(0)"><div class="c-img"><div class="c-img-grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>';
+  html+='<div class="c-body">';
+  html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span class="cat '+a.cat+'">'+a.catLabel+'</span><span class="qv-stag s-neg" style="font-family:var(--fm);font-size:.6rem;padding:2px 7px;border-radius:3px;background:rgba(255,59,107,.12);color:var(--pulse);border:1px solid rgba(255,59,107,.3)">'+a.region+'</span></div>';
+  html+='<div class="ct ct-lg">'+trunc(a.title,110)+'</div>';
+  html+='<div class="cx">'+trunc(a.desc,220)+'</div>';
+  html+='<div class="cm"><div><div class="cs">'+a.source+'</div><div class="cs">'+a.time+'</div></div><span style="font-family:var(--fm);font-size:.65rem;color:var(--pulse)">Hype '+a.hype+'</span></div>';
+  html+='</div><div class="card-read-hint">Read Full Story →</div></div>';
+  // Tall card
+  var a1=NEWS[1];
+  html+='<div class="card c5 r2 rv d1" onclick="openModal(1)"><div class="ci">';
+  html+='<div class="live-badge" style="margin-bottom:14px;align-self:flex-start"><div class="live-d"></div>Breaking</div>';
+  html+='<span class="cat '+a1.cat+'">'+a1.catLabel+'</span>';
+  html+='<div class="ct" style="margin-top:8px;font-size:1.15rem">'+trunc(a1.title,100)+'</div>';
+  html+='<div class="cx" style="margin-top:8px">'+trunc(a1.desc,190)+'</div>';
+  html+='<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(0,212,255,.1)">';
+  html+='<div class="sec-lbl" style="font-size:.62rem;margin-bottom:10px">Related Signals</div>';
+  var rc=['var(--pulse)','var(--gold)','var(--neon)'];
+  [NEWS[4]||NEWS[0],NEWS[7]||NEWS[1],NEWS[9]||NEWS[2]].forEach(function(ar,r){
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:rgba(255,255,255,.025);border-radius:8px;border:1px solid rgba(255,255,255,.05);margin-bottom:7px">';
+    html+='<div style="width:3px;height:34px;border-radius:2px;background:'+rc[r]+';flex-shrink:0"></div>';
+    html+='<div><div style="font-size:.78rem;font-weight:500;line-height:1.3">'+trunc(ar.title,62)+'</div><div class="cs">'+ar.source+' · '+ar.time+'</div></div></div>';
+  });
+  html+='</div>';
+  html+='<div class="cm" style="margin-top:auto;padding-top:12px"><span class="cs">'+a1.source+'</span><span style="font-family:var(--fm);font-size:.63rem;color:var(--pulse)">Hype '+a1.hype+'</span></div>';
+  html+='</div><div class="card-read-hint">Read Full Story →</div></div>';
+  // Small cards
+  [NEWS[2]||NEWS[0],NEWS[3]||NEWS[1],NEWS[4]||NEWS[2]].forEach(function(ai,i){
+    html+='<div class="card c4 rv d'+(i+1)+'" onclick="openModal('+(i+2)+')"><div class="ci">';
+    html+='<span class="cat '+ai.cat+'">'+ai.catLabel+'</span>';
+    html+='<div class="ct" style="margin-top:8px">'+trunc(ai.title,86)+'</div>';
+    html+='<div class="cm" style="margin-top:auto"><span class="cs">'+ai.source+' · '+ai.time+'</span><span style="font-family:var(--fm);font-size:.63rem;color:var(--neon)">'+ai.hype+'</span></div>';
+    html+='</div><div class="card-read-hint">Read Full Story →</div></div>';
+  });
+  // Stats — compute from live data
+  var negCount = NEWS.filter(function(n){ return n.sentiment==='neg'; }).length;
+  var avgHype = (NEWS.reduce(function(s,n){ return s+n.hype; },0)/NEWS.length).toFixed(1);
+  var sg=[
+    {n:NEWS.length+'',l:'Stories today',g:'linear-gradient(135deg,var(--pulse),var(--gold))',c:'dn',t:'↑ Live from wire'},
+    {n:negCount+'',l:'Crisis signals',g:'linear-gradient(135deg,var(--pulse),var(--neon2))',c:'dn',t:'↑ Monitored live'},
+    {n:'192',l:'Countries tracked',g:'linear-gradient(135deg,var(--neon3),var(--neon))',c:'up',t:'All regions active'},
+    {n:avgHype,l:'Avg hype score',g:'linear-gradient(135deg,var(--pulse),var(--gold))',c:'dn',t:'Updated now'}
+  ];
+  sg.forEach(function(s,idx){
+    html+='<div class="card c3 rv d'+(idx+1)+'" onclick="openModal('+idx+')"><div class="ci"><div class="snum" style="background:'+s.g+'">'+s.n+'</div><div class="slbl">'+s.l+'</div><div class="schg '+s.c+'">'+s.t+'</div></div></div>';
+  });
+  grid.innerHTML=html;
+  grid.querySelectorAll('.rv').forEach(function(el){ rvObs.observe(el); });
+
+  // Update last-refreshed indicator
+  var ind=document.getElementById('nav-live-text');
+  if(ind){ var now=new Date(); ind.textContent='Updated '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0'); }
+}
+
+// Fetch from GNews API
+function fetchLiveNews(){
+  // Check daily cache first
+  var cached = loadCachedNews();
+  if(cached && cached.length >= 5){
+    NEWS = cached;
+    rebuildUI();
+    return;
+  }
+  // Show loading state on hero card
+  var grid=document.getElementById('bento-grid');
+  if(grid) grid.style.opacity='0.5';
+
+  var queries = ['world politics war', 'economy finance markets', 'technology science'];
+  var allArticles = [];
+  var done = 0;
+
+  queries.forEach(function(q){
+    var url = 'https://gnews.io/api/v4/search?q='+encodeURIComponent(q)+'&lang=en&max=4&apikey='+GNEWS_KEY;
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.articles) allArticles = allArticles.concat(data.articles);
+        done++;
+        if(done===queries.length) processArticles(allArticles);
+      })
+      .catch(function(){
+        done++;
+        if(done===queries.length){
+          if(allArticles.length>0) processArticles(allArticles);
+          else{ if(grid) grid.style.opacity='1'; } // keep fallback
+        }
+      });
+  });
+}
+
+function processArticles(articles){
+  // Deduplicate by title
+  var seen={};
+  var unique=articles.filter(function(a){
+    if(!a.title||seen[a.title]) return false;
+    seen[a.title]=true; return true;
+  });
+  if(unique.length >= 5){
+    NEWS = unique.slice(0,10).map(mapArticle);
+    saveCachedNews(NEWS);
+  }
+  var grid=document.getElementById('bento-grid');
+  if(grid) grid.style.opacity='1';
+  rebuildUI();
+}
+
+// Kick off on page load
+fetchLiveNews();
+
+var TICKER_ITEMS = NEWS.map(function(n){ return n.title; });
+var GLOBE_HS = [
+  { lat:25.2, lng:55.3,   c:0xff3b6b, region:"Middle East",  idx:1 },
+  { lat:51.5, lng:-0.1,   c:0x00d4ff, region:"Europe",       idx:2 },
+  { lat:40.7, lng:-74.0,  c:0xf5a623, region:"Americas",     idx:3 },
+  { lat:35.7, lng:139.7,  c:0x00d4ff, region:"Asia Pacific", idx:5 },
+  { lat:55.8, lng:37.6,   c:0xff3b6b, region:"E. Europe",    idx:7 },
+  { lat:28.6, lng:77.2,   c:0x00ffb3, region:"South Asia",   idx:8 },
+  { lat:-33.9, lng:18.4,  c:0xf5a623, region:"Africa",       idx:9 },
+  { lat:31.8, lng:35.2,   c:0xff3b6b, region:"Israel/Gaza",  idx:0 },
+];
+
+var TICKER_ITEMS = [
+  "🔥 BREAKING: Trump posts Iran will be 'hit very hard' today — Day 8 of US-Israel war",
+  "Dubai flights resume after drone attacks on airport — Emirates operations restart",
+  "🔥 QatarEnergy halts ALL LNG production after Iranian drone strike on Ras Laffan",
+  "US House moves on War Powers Resolution to limit Trump's Iran military authority",
+  "France announces first nuclear stockpile expansion in decades — Macron cites global threat",
+  "🔥 Iran clerics convene to select new Supreme Leader after Khamenei death confirmed",
+  "Spain bans US military use of joint airbases for Iran operations — NATO rift widens",
+  "Saudi Arabia intercepts 16 drones targeting massive Shaybah oil field",
+  "🔥 Gulf Arab states review $3 trillion US investment pledges as war strains economies",
+  "China sets lower 2026 GDP growth target amid property slump and trade headwinds",
+  "Canada-India sign economic partnership deal after two years of strained relations",
+  "UN WFP warns of humanitarian crisis across 8+ countries from Middle East conflict"
+];
+
+// ── helpers ──
+function trunc(s,n){ return s&&s.length>n?s.slice(0,n)+'…':s||''; }
+
+// ── MODAL ──
+var currentIdx = 0;
+function openModal(idx){
+  currentIdx = idx;
+  var n = NEWS[idx];
+  // badges
+  var cb = document.getElementById('modal-cat-badge');
+  cb.className = 'cat '+n.cat; cb.textContent = n.catLabel;
+  var sb = document.getElementById('modal-sent-badge');
+  var scls = n.sentiment==='neg'?'s-neg':n.sentiment==='pos'?'s-pos':'s-neu';
+  sb.className = 'qv-stag '+scls;
+  sb.textContent = n.sentiment==='neg'?'Negative':n.sentiment==='pos'?'Positive':'Neutral';
+  document.getElementById('modal-hype-badge').textContent = 'Hype '+n.hype;
+  // hero orb tint per category
+  var mh = document.getElementById('modal-hero');
+  mh.style.background = n.cat==='cat-c'?'linear-gradient(135deg,#140608,#1a0c18)':
+                        n.cat==='cat-e'?'linear-gradient(135deg,#0d1006,#141a06)':
+                        n.cat==='cat-t'?'linear-gradient(135deg,#061412,#062018)':
+                        'linear-gradient(135deg,#060f20,#0c1e38)';
+  // content
+  document.getElementById('modal-title').textContent = n.title;
+  document.getElementById('modal-src').textContent = n.source;
+  document.getElementById('modal-time').textContent = n.time+' · '+n.region;
+  document.getElementById('modal-region').textContent = n.region;
+  document.getElementById('modal-body').innerHTML = n.body||('<p>'+n.desc+'</p>');
+  // context
+  var ci = document.getElementById('modal-context-items');
+  ci.innerHTML = (n.context||[]).map(function(c){ return '<div class="modal-context-item">'+c+'</div>'; }).join('');
+  // sentiment bar
+  var fill = document.getElementById('msb-fill');
+  fill.style.width = '0%';
+  fill.style.background = n.sentColor||'var(--neon2)';
+  setTimeout(function(){ fill.style.width = (n.sentPct||50)+'%'; }, 80);
+  document.getElementById('msb-val').textContent = n.sentLabel||'';
+  document.getElementById('msb-val').style.color = n.sentColor||'var(--neon2)';
+  // tags
+  document.getElementById('modal-tags').innerHTML = (n.tags||[]).map(function(t){ return '<span class="modal-tag">'+t+'</span>'; }).join('');
+  // nav
+  document.getElementById('modal-prev').disabled = idx===0;
+  document.getElementById('modal-prev').style.opacity = idx===0?'.35':'1';
+  document.getElementById('modal-next').disabled = idx===NEWS.length-1;
+  document.getElementById('modal-next').style.opacity = idx===NEWS.length-1?'.35':'1';
+  document.getElementById('modal-counter').textContent = (idx+1)+' of '+NEWS.length;
+  // scroll to top
+  document.querySelector('.modal-scroll').scrollTop = 0;
+  // open
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function modalStep(dir){
+  var next = currentIdx+dir;
+  if(next>=0 && next<NEWS.length) openModal(next);
+}
+// ── WAITLIST ──
+var WL_KEY = 'pulseglobal_waitlist_v3';
+var wlAdminOpen = false;
+var wlAdminAuthed = false;
+
+function wlLoad(){ try{ return JSON.parse(localStorage.getItem(WL_KEY)||'[]'); }catch(e){ return []; } }
+function wlSave(list){ localStorage.setItem(WL_KEY, JSON.stringify(list)); }
+function wlTimeAgo(ts){ var m=Math.floor((Date.now()-new Date(ts))/60000); if(m<1) return 'just now'; if(m<60) return m+'m ago'; if(m<1440) return Math.floor(m/60)+'h ago'; return Math.floor(m/1440)+'d ago'; }
+function wlValid(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function wlUpdateCounter(){
+  var el=document.getElementById('wl-count');
+  if(el) el.textContent=wlLoad().length.toLocaleString();
+}
+
+function wlSubmit(){
+  var inp=document.getElementById('cta-email');
+  var em=inp.value.trim().toLowerCase();
+  var err=document.getElementById('cta-err');
+  if(!wlValid(em)){ err.textContent='Please enter a valid email address.'; inp.classList.add('invalid'); return; }
+  err.textContent=''; inp.classList.remove('invalid');
+  var btn=document.getElementById('cta-btn'); btn.textContent='Saving…'; btn.disabled=true;
+  var list=wlLoad();
+  if(!list.find(function(e){ return e.email===em; })){ list.push({email:em,ts:new Date().toISOString()}); wlSave(list); }
+  var pos=list.findIndex(function(e){ return e.email===em; })+1;
+  wlUpdateCounter();
+  document.getElementById('cta-thanks-email').textContent=em;
+  document.getElementById('cta-thanks-pos').textContent='#'+pos.toLocaleString();
+  document.getElementById('cta-form-wrap').style.display='none';
+  document.getElementById('cta-thanks').style.display='block';
+  if(wlAdminAuthed) wlRenderDash();
+}
+
+function wlReset(){
+  var inp=document.getElementById('cta-email'); inp.value=''; inp.classList.remove('invalid');
+  document.getElementById('cta-err').textContent='';
+  var btn=document.getElementById('cta-btn'); btn.textContent='Get Early Access'; btn.disabled=false;
+  document.getElementById('cta-form-wrap').style.display='block';
+  document.getElementById('cta-thanks').style.display='none';
+}
+
+function wlToggleAdmin(){
+  wlAdminOpen=!wlAdminOpen;
+  document.getElementById('admin-panel').classList.toggle('open',wlAdminOpen);
+}
+
+function wlDoLogin(){
+  var pw=document.getElementById('pw-input').value;
+  if(pw==='pulse2026'){
+    wlAdminAuthed=true;
+    document.getElementById('admin-login-wrap').style.display='none';
+    document.getElementById('admin-dash').style.display='block';
+    wlRenderDash();
+  } else {
+    document.getElementById('pw-input').value='';
+    document.getElementById('login-err').textContent='Wrong password. Try again.';
+  }
+}
+
+function wlDoLogout(){
+  wlAdminAuthed=false;
+  document.getElementById('pw-input').value='';
+  document.getElementById('login-err').textContent='';
+  document.getElementById('admin-login-wrap').style.display='block';
+  document.getElementById('admin-dash').style.display='none';
+}
+
+function wlRenderDash(){
+  var list=wlLoad();
+  document.getElementById('admin-count').textContent=list.length+' total signup'+(list.length!==1?'s':'');
+  var empty=document.getElementById('admin-empty');
+  var table=document.getElementById('admin-table');
+  var tbody=document.getElementById('admin-tbody');
+  if(!list.length){ empty.style.display='block'; table.style.display='none'; return; }
+  empty.style.display='none'; table.style.display='table';
+  tbody.innerHTML=list.slice().reverse().map(function(e,i){
+    var d=new Date(e.ts);
+    var ds=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    return '<tr><td class="td-num">#'+(list.length-i)+'</td><td class="td-email">'+e.email+'</td><td class="td-date">'+ds+' · '+wlTimeAgo(e.ts)+'</td><td><button class="btn-del" onclick="wlRemove(\''+e.email+'\')">✕</button></td></tr>';
+  }).join('');
+}
+
+function wlRemove(email){
+  var list=wlLoad().filter(function(e){ return e.email!==email; });
+  wlSave(list); wlUpdateCounter(); wlRenderDash();
+}
+
+function wlCopyAll(){
+  var text=wlLoad().map(function(e){ return e.email; }).join('\n');
+  var btn=document.getElementById('btn-acopy');
+  try{
+    navigator.clipboard.writeText(text).then(function(){ btn.textContent='✓ Copied!'; setTimeout(function(){ btn.textContent='Copy All Emails'; },2000); });
+  } catch(x){
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent='✓ Copied!'; setTimeout(function(){ btn.textContent='Copy All Emails'; },2000);
+  }
+}
+
+function wlClearAll(){
+  var list=wlLoad();
+  if(!confirm('Delete all '+list.length+' signup(s)? Cannot be undone.')) return;
+  wlSave([]); wlUpdateCounter(); wlRenderDash();
+}
+
+// Wire all CTA events via addEventListener — most compatible for Android Chrome
+document.addEventListener('DOMContentLoaded', function(){
+  wlUpdateCounter();
+  var el;
+  if((el=document.getElementById('cta-btn'))) el.addEventListener('click', wlSubmit);
+  if((el=document.getElementById('cta-email'))) el.addEventListener('keydown', function(e){ if(e.key==='Enter') wlSubmit(); });
+  if((el=document.getElementById('cta-update-btn'))) el.addEventListener('click', wlReset);
+  if((el=document.getElementById('admin-tog-btn'))) el.addEventListener('click', wlToggleAdmin);
+  if((el=document.getElementById('btn-login'))) el.addEventListener('click', wlDoLogin);
+  if((el=document.getElementById('pw-input'))) el.addEventListener('keydown', function(e){ if(e.key==='Enter') wlDoLogin(); });
+  if((el=document.getElementById('btn-alogout'))) el.addEventListener('click', wlDoLogout);
+  if((el=document.getElementById('btn-acopy'))) el.addEventListener('click', wlCopyAll);
+  if((el=document.getElementById('btn-aclear'))) el.addEventListener('click', wlClearAll);
+});
+
+
+
+
+// Keyboard nav
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeModal();
+  if(e.key==='ArrowRight'&&document.getElementById('modal').classList.contains('open')) modalStep(1);
+  if(e.key==='ArrowLeft'&&document.getElementById('modal').classList.contains('open')) modalStep(-1);
+});
+
+// ── Scroll reveal observer (created immediately so IIFEs below can use it) ──
+window.rvObs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('in'); });
+},{threshold:0.08});
+
+// ── TICKER & BENTO built dynamically by rebuildUI() after news loads ──
+(function(){
+  // Build ticker from fallback immediately, API will refresh it
+  var track = document.getElementById('ticker-track');
+  if(!track) return;
+  var html='';
+  for(var p=0;p<2;p++){
+    NEWS.forEach(function(n){
+      html+='<span class="ti"><span class="td"></span>'+n.title+'</span>';
+    });
+  }
+  track.innerHTML=html;
+})();
+
+// ── BENTO built by rebuildUI() ──
+(function(){
+  rebuildUI();
+})();
+
+window.addEventListener('DOMContentLoaded',function(){
+
+  // Observe any .rv elements not yet registered (static HTML ones)
+  document.querySelectorAll('.rv').forEach(function(el){ rvObs.observe(el); });
+
+  // Gauge
+  setTimeout(function(){
+    var arc=document.getElementById('garc'); if(arc) arc.style.strokeDashoffset=''+(440-(440*.94));
+    var nd=document.getElementById('gneedle'); if(nd) nd.style.transform='rotate('+((-90)+(.94*180))+'deg)';
+  },600);
+  var gc=document.getElementById('gauge-card');
+  if(gc){
+    var go=new IntersectionObserver(function(e){
+      if(e[0].isIntersecting){ e[0].target.querySelectorAll('.gs-fill').forEach(function(b){ b.style.width=b.dataset.w; }); go.unobserve(e[0].target); }
+    },{threshold:0.3}); go.observe(gc);
+  }
+
+  // ── GLOBE ──
+  var canvas=document.getElementById('globe-canvas');
+  if(!canvas||typeof THREE==='undefined') return;
+  var W=window.innerWidth,H=window.innerHeight;
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W,H); renderer.setClearColor(0,0);
+  var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(45,W/H,0.1,100); cam.position.z=2.8;
+  var globe=new THREE.Mesh(new THREE.SphereGeometry(1,64,64),new THREE.MeshPhongMaterial({color:0x050d1f,emissive:0x001530,specular:0x002244,shininess:60,transparent:true,opacity:.92}));
+  scene.add(globe);
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.002,28,28),new THREE.MeshBasicMaterial({color:0x00d4ff,wireframe:true,transparent:true,opacity:.055})));
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.15,32,32),new THREE.MeshBasicMaterial({color:0x0044cc,transparent:true,opacity:.06,side:THREE.BackSide})));
+  scene.add(new THREE.AmbientLight(0x112244,1.4));
+  var dl=new THREE.DirectionalLight(0x0099ff,2.5); dl.position.set(3,2,3); scene.add(dl);
+  var rl=new THREE.DirectionalLight(0x002255,1); rl.position.set(-3,-1,-2); scene.add(rl);
+
+  var hsGrp=new THREE.Group(), hsMeshes=[];
+  GLOBE_HS.forEach(function(hs){
+    var phi=(90-hs.lat)*(Math.PI/180), theta=(hs.lng+180)*(Math.PI/180);
+    var x=-(Math.sin(phi)*Math.cos(theta)), z=Math.sin(phi)*Math.sin(theta), y=Math.cos(phi);
+    var ring=new THREE.Mesh(new THREE.RingGeometry(.022,.038,32),new THREE.MeshBasicMaterial({color:hs.c,transparent:true,opacity:.85,side:THREE.DoubleSide}));
+    ring.position.set(x,y,z).multiplyScalar(1.012); ring.lookAt(new THREE.Vector3(x,y,z).multiplyScalar(2)); hsGrp.add(ring);
+    var dot=new THREE.Mesh(new THREE.SphereGeometry(.016,16,16),new THREE.MeshBasicMaterial({color:hs.c}));
+    dot.position.set(x,y,z).multiplyScalar(1.018); hsGrp.add(dot);
+    hsMeshes.push({mesh:dot,hs:hs});
+    var pr=new THREE.Mesh(new THREE.RingGeometry(.038,.054,32),new THREE.MeshBasicMaterial({color:hs.c,transparent:true,opacity:.3,side:THREE.DoubleSide}));
+    pr.position.set(x,y,z).multiplyScalar(1.012); pr.lookAt(new THREE.Vector3(x,y,z).multiplyScalar(2));
+    pr.userData.pp=Math.random()*Math.PI*2; pr.userData.pm=pr.material; hsGrp.add(pr);
+  });
+  scene.add(hsGrp);
+
+  // QuickView
+  var rc2=new THREE.Raycaster(), m2=new THREE.Vector2();
+  var qv=document.getElementById('qv'), qvTO=null, qvIV=null;
+  function showQV(hs, ex, ey){
+    var n=NEWS[hs.idx];
+    document.getElementById('qreg').textContent=hs.region;
+    document.getElementById('qtitle').textContent=trunc(n.title,78);
+    document.getElementById('qsrc').textContent=n.source+' · '+n.time;
+    var st=document.getElementById('qstag');
+    if(n.sentiment==='neg'){st.className='qv-stag s-neg';st.textContent='Negative';}
+    else if(n.sentiment==='pos'){st.className='qv-stag s-pos';st.textContent='Positive';}
+    else{st.className='qv-stag s-neu';st.textContent='Neutral';}
+    var l=ex+22,t=ey-80,vw=window.innerWidth,vh=window.innerHeight;
+    if(l+310>vw) l=ex-318; if(t+250>vh) t=vh-260; if(t<70) t=70;
+    qv.style.left=l+'px'; qv.style.top=t+'px';
+    var bar=document.getElementById('qbar'); bar.className='qv-bar'; bar.offsetHeight; bar.className='qv-bar run';
+    var s=5; document.getElementById('qt').textContent='0:05';
+    clearInterval(qvIV); qvIV=setInterval(function(){ s--; document.getElementById('qt').textContent='0:0'+Math.max(0,s); if(s<=0)clearInterval(qvIV); },1000);
+    qv.classList.add('show'); clearTimeout(qvTO); qvTO=setTimeout(function(){ qv.classList.remove('show'); },6200);
+  }
+  canvas.addEventListener('mousemove',function(e){
+    var r=canvas.getBoundingClientRect();
+    m2.x=((e.clientX-r.left)/r.width)*2-1; m2.y=-((e.clientY-r.top)/r.height)*2+1;
+    rc2.setFromCamera(m2,cam);
+    var hits=rc2.intersectObjects(hsMeshes.map(function(h){return h.mesh;}));
+    if(hits.length){ var idx=hsMeshes.findIndex(function(h){return h.mesh===hits[0].object;}); if(idx>=0) showQV(hsMeshes[idx].hs,e.clientX,e.clientY); }
+  });
+
+  var prev=Date.now(); globe.rotation.x=.15; hsGrp.rotation.x=.15;
+  function animate(){
+    requestAnimationFrame(animate);
+    var now=Date.now(),dt=(now-prev)/1000; prev=now;
+    // scroll-driven rotation
+    var scrollRot=window.scrollY*0.0004;
+    globe.rotation.y+=0.0010+scrollRot*0.002;
+    hsGrp.rotation.y=globe.rotation.y;
+    hsGrp.children.forEach(function(c){ if(c.userData.pm){ c.userData.pp+=dt*2.4; c.userData.pm.opacity=(Math.sin(c.userData.pp)*.5+.5)*.45; var s=1+Math.sin(c.userData.pp)*.28; c.scale.set(s,s,s); } });
+    renderer.render(scene,cam);
+  }
+  animate();
+  window.addEventListener('resize',function(){ var W2=window.innerWidth,H2=window.innerHeight; cam.aspect=W2/H2; cam.updateProjectionMatrix(); renderer.setSize(W2,H2); });
+});
+</script>
+</body>
+</html>
